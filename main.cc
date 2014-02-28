@@ -75,6 +75,9 @@ void GLUT_display() {
 
 void GLUT_reshape(int w, int h) {
     glViewport(0, 0, w, h);
+    if(w > h) {
+        glm::mat4 projectionMatrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f);
+    }
 }
 
 
