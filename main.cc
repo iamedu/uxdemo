@@ -4,32 +4,16 @@
 
 #include <error.h>
 
+#include <ux/gl.h>
 #include <ux/util.h>
 
-#define VERTEX_SHADER " \
-  #version 130\n \
-  in vec4 position; \
-  in vec4 color; \
-  smooth out vec4 vColor; \
-  void main() { \
-  gl_Position = position; \
-    vColor = color; \
-  }"
-
-#define FRAGMENT_SHADER " \
-  #version 130\n \
-  smooth in vec4 vColor; \
-  void main() { \
-    gl_FragColor = vColor; \
-  }"
-
 const GLfloat sValues[] = {
-  0.0f, 0.5f, 0.0f, 1.0f,
-  -0.5f, -0.5f, 0.0f, 1.0f,
-  0.5f, -0.5f, 0.0f, 1.0f,
-  1.0f, 0.0f, 0.0f, 1.0f,
-  0.0f, 1.0f, 0.0f, 1.0f,
-  0.0f, 0.0f, 1.0f, 1.0f,
+    0.0f, 0.5f, 0.0f, 1.0f,
+    -0.5f, -0.5f, 0.0f, 1.0f,
+    0.5f, -0.5f, 0.0f, 1.0f,
+    1.0f, 0.0f, 0.0f, 1.0f,
+    0.0f, 1.0f, 0.0f, 1.0f,
+    0.0f, 0.0f, 1.0f, 1.0f,
 };
 
 static GLuint sProgram;
@@ -37,30 +21,35 @@ static GLuint sLocPosition;
 static GLuint sLocColor;
 static GLuint sValuesBuffer;
 
-GLuint CreateShader(GLenum shaderType, const char* shaderSource) {
-  GLuint shader = glCreateShader(shaderType);
-  glShaderSource(shader, 1, (const GLchar **)&shaderSource, NULL);
-  glCompileShader(shader);
-  
-  CHECK_GL_STATUS(Shader, shader, GL_COMPILE_STATUS);
-  
-  return shader;
+GLuint CreateShader(GLenum shaderType, std::string shaderSource) {
+    GLuint shader = glCreateShader(shaderType);
+    const char * source = shaderSource.data();
+    glShaderSource(shader, 1, (const GLchar **)&source, NULL);
+
+    glCompileShader(shader);
+
+    CHECK_GL_STATUS(Shader, shader, GL_COMPILE_STATUS);
+
+    return shader;
 }
 
 GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader) {
-  GLuint program = glCreateProgram();
-  glAttachShader(program, vertexShader);
-  glAttachShader(program, fragmentShader);
-  glLinkProgram(program);
-  
-  CHECK_GL_STATUS(Program, program, GL_LINK_STATUS);
-  
-  return program;
+    GLuint program = glCreateProgram();
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, fragmentShader);
+    glLinkProgram(program);
+
+    CHECK_GL_STATUS(Program, program, GL_LINK_STATUS);
+
+    return program;
 }
 
 void Init() {
-    GLuint vertexShader = CreateShader(GL_VERTEX_SHADER, VERTEX_SHADER);
-    GLuint fragmentShader = CreateShader(GL_FRAGMENT_SHADER, FRAGMENT_SHADER);
+    std::string vertexShaderSource = readFile("shaders/main.vsh");
+    std::string fragmentShaderSource = readFile("shaders/main.fsh");
+
+    GLuint vertexShader = CreateShader(GL_VERTEX_SHADER, vertexShaderSource);
+    GLuint fragmentShader = CreateShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
     sProgram = CreateProgram(vertexShader, fragmentShader);
 
     sLocPosition = glGetAttribLocation(sProgram, "position");

@@ -2,6 +2,11 @@
 
 #include <ux/gl.h>
 
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+
 #define CHECK_GL_STATUS(T,O,S) { \
   GLint status; \
   glGet##T##iv(O, S, &status); \
@@ -14,4 +19,6 @@
     free(infoLog); \
   } \
 }
+
+std::string readFile(std::string filename);
 
