@@ -1,26 +1,10 @@
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
+
 #include <error.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
 
-#define GL_GLEXT_PROTOTYPES
-
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
-
-#define CHECK_GL_STATUS(T,O,S) { \
-  GLint status; \
-  glGet##T##iv(O, S, &status); \
-  if (GL_FALSE == status) { \
-    GLint logLength; \
-    glGet##T##iv(O, GL_INFO_LOG_LENGTH, &logLength); \
-    char *infoLog = (char*)malloc(logLength * sizeof(char)); \
-    glGet##T##InfoLog(O, logLength, NULL, infoLog); \
-    fprintf(stderr, "%d: %d, %s\n", __LINE__, S, infoLog); \
-    free(infoLog); \
-  } \
-}
+#include <ux/util.h>
 
 #define VERTEX_SHADER " \
   #version 130\n \

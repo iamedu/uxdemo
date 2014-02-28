@@ -1,2 +1,2 @@
 uxtest: main.cc
-	g++ -lglut -lGLU -lGL --std=c++11 main.cc -o uxtest
+	g++ -lglut -lGLU -lGL -Iinclude --std=c++11 main.cc -o uxtest
