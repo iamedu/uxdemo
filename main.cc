@@ -7,14 +7,17 @@
 #include <ux/gl.h>
 #include <ux/util.h>
 #include <ux/shaders.h>
+#include <ux/shapes.h>
 
 const GLfloat sValues[] = {
-    0.0f, 0.5f, 0.0f, 1.0f,
+    -0.5f, 0.5f, 0.0f, 1.0f,
     -0.5f, -0.5f, 0.0f, 1.0f,
+    0.5f, 0.5f, 0.0f, 1.0f,
     0.5f, -0.5f, 0.0f, 1.0f,
     1.0f, 0.0f, 0.0f, 1.0f,
     0.0f, 1.0f, 0.0f, 1.0f,
     0.0f, 0.0f, 1.0f, 1.0f,
+    1.0f, 0.0f, 0.0f, 1.0f,
 };
 
 static GLuint sProgram;
@@ -22,7 +25,7 @@ static GLuint sLocPosition;
 static GLuint sLocColor;
 static GLuint sValuesBuffer;
 
-void Init() {
+void init() {
     std::string vertexShaderSource = readFile("shaders/main.vsh");
     std::string fragmentShaderSource = readFile("shaders/main.fsh");
 
@@ -37,6 +40,11 @@ void Init() {
     glBindBuffer(GL_ARRAY_BUFFER, sValuesBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(sValues), sValues, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glEnable( GL_LINE_SMOOTH );
+    glEnable( GL_POLYGON_SMOOTH );
+    glHint( GL_LINE_SMOOTH_HINT, GL_NICEST );
+    glHint( GL_POLYGON_SMOOTH_HINT, GL_NICEST );
 }
 
 void GLUT_display() {
@@ -49,9 +57,9 @@ void GLUT_display() {
     glEnableVertexAttribArray(sLocPosition);
     glVertexAttribPointer(sLocPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(sLocColor);
-    glVertexAttribPointer(sLocColor, 4, GL_FLOAT, GL_FALSE, 0, (void *)48);
+    glVertexAttribPointer(sLocColor, 4, GL_FLOAT, GL_FALSE, 0, (void *)64);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     for (GLenum err = glGetError(); err != GL_NO_ERROR; err = glGetError()) {
         fprintf(stderr, "%d: %s\n", err, gluErrorString(err));
@@ -82,7 +90,7 @@ int main(int argc, char *argv[]) {
     glutDisplayFunc(GLUT_display);
     glutReshapeFunc(GLUT_reshape);
 
-    Init();
+    init();
     glutMainLoop();
 
     return 0;
