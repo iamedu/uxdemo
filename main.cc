@@ -18,6 +18,7 @@ static TextureShaderProgram *textureProgram;
 static TextShaderProgram *textProgram;
 static ColorQuad *colorQuad;
 static TextureQuad *textureQuad;
+static int textureCache[100];
 static int whiteTexture;
 static int blackTexture;
 static int textureWidth;
@@ -276,9 +277,9 @@ void draw() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     glClearColor(alpha, alpha, alpha, 1.0f);
-    video(alpha);
-    // draw1(alpha);
-    // draw2(1 - alpha);
+    // video(alpha);
+    draw1(alpha);
+    draw2(1 - alpha);
 }
 
 
@@ -344,27 +345,27 @@ void animate() {
         translation += 0.1f;
     }
 
-    // if(direction == -1) {
-    //     if(alpha > 0.0f) {
-    //         alpha -= 0.001f;
-    //         if(alpha <= 0.0f) {
-    //             alpha = 0.0f;
-    //             direction = 1;
-    //         }
-    //     } else {
-    //         direction = 1;
-    //     }
-    // } else {
-    //     if(alpha < 1.0f) {
-    //         alpha += 0.001f;
-    //         if(alpha >= 1.0f) {
-    //             alpha = 1.0f;
-    //             direction = -1;
-    //         }
-    //     } else {
-    //         direction = -1;
-    //     }
-    // }
+    if(direction == -1) {
+        if(alpha > 0.0f) {
+            alpha -= 0.001f;
+            if(alpha <= 0.0f) {
+                alpha = 0.0f;
+                direction = 1;
+            }
+        } else {
+            direction = 1;
+        }
+    } else {
+        if(alpha < 1.0f) {
+            alpha += 0.001f;
+            if(alpha >= 1.0f) {
+                alpha = 1.0f;
+                direction = -1;
+            }
+        } else {
+            direction = -1;
+        }
+    }
 
 }
 
