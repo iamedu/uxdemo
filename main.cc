@@ -25,8 +25,8 @@ void init() {
 
     int w, h;
 
-    texture = loadTexture("textures/OpenGL_Tutorial_Texture.jpg", &w, &h);
-    // texture = loadTexture("textures/lunario10_whitebg01.png", &w, &h);
+    // texture = loadTexture("textures/OpenGL_Tutorial_Texture.jpg");
+    texture = loadTexture("textures/lunario10_whitebg01.png");
 
     glEnable( GL_LINE_SMOOTH );
     glEnable( GL_POLYGON_SMOOTH );
@@ -39,7 +39,7 @@ void init() {
 }
 
 void GLUT_display() {
-    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // colorProgram->useProgram();

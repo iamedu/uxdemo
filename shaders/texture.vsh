@@ -5,7 +5,7 @@ varying vec2 v_TextureCoordinates;
 
 void main()     
 {    
-    v_TextureCoordinates = vec2(position[0], position[1]);    
+    v_TextureCoordinates = textureCoordinates;//vec2(position[0], position[1]);    
     gl_Position = position;    
 }
 

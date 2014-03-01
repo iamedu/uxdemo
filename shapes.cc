@@ -54,9 +54,15 @@ void TextureQuad::bindData(TextureShaderProgram *shaderProgram) {
             shaderProgram->getPositionAttributeLocation(),
             2,
             stride);
+    
+    vertexArray->setVertexAttribPointer(
+            0,
+            shaderProgram->getTextureCoordinatesAttributeLocation(),
+            2,
+            stride);
 
     vertexArray->setVertexAttribPointer(
-            (void *)2, //positionComponentCount
+            (void *)8, //positionComponentCount
             shaderProgram->getTextureCoordinatesAttributeLocation(),
             textureComponentCount,
             stride);

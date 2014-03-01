@@ -10,7 +10,7 @@ GLuint loadTexture(std::string path) {
          path.data(),
          SOIL_LOAD_AUTO,
          SOIL_CREATE_NEW_ID,
-         SOIL_FLAG_INVERT_Y
+         0//SOIL_FLAG_INVERT_Y
         );
 
     if(texture_id == 0) {
