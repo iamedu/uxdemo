@@ -18,9 +18,11 @@ static TextureShaderProgram *textureProgram;
 static TextShaderProgram *textProgram;
 static ColorQuad *colorQuad;
 static TextureQuad *textureQuad;
-static int texture;
+static int whiteTexture;
+static int blackTexture;
 static int textureWidth;
 static int textureHeight;
+static int direction = -1;
 static float backgroundScale = 3.0f;
 static float translation = -5.0f;
 static float alpha = 1.0f;
@@ -34,7 +36,7 @@ void start_text();
 void render_text(const char *text, float x, float y, float sx, float sy);
 
 void init() {
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     colorProgram = new ColorShaderProgram("shaders/color.vsh", "shaders/color.fsh");
     textureProgram = new TextureShaderProgram("shaders/texture.vsh", "shaders/texture.fsh");
@@ -87,7 +89,8 @@ void init() {
      *
      */
 
-    texture = loadTexture("textures/lunario10_whitebg01.png", &textureWidth, &textureHeight);
+    whiteTexture = loadTexture("textures/lunario10_whitebg01.png", &textureWidth, &textureHeight);
+    blackTexture = loadTexture("textures/lunario10_blackbg01.png", &textureWidth, &textureHeight);
 
     glEnable( GL_LINE_SMOOTH );
     glEnable( GL_POLYGON_SMOOTH );
@@ -100,7 +103,7 @@ void init() {
 }
 
 
-void draw1() {
+void draw1(float alpha) {
     glm::mat4 scaleBackground = glm::scale( glm::mat4 (1.0f), glm::vec3(1.0f, (float)textureHeight / (float)textureWidth, 1.0f));
     glm::mat4 scale = glm::scale( glm::mat4 (1.0f), glm::vec3(backgroundScale));
     glm::mat4 translate;
@@ -108,7 +111,7 @@ void draw1() {
 
 
     textureProgram->useProgram();
-    textureProgram->setUniforms(transformed, texture, alpha);
+    textureProgram->setUniforms(transformed, whiteTexture, alpha);
     textureQuad->bindData(textureProgram);
     textureQuad->draw();
 
@@ -143,10 +146,55 @@ void draw1() {
 
 }
 
+void draw2(float alpha) {
+    glm::mat4 scaleBackground = glm::scale( glm::mat4 (1.0f), glm::vec3(1.0f, (float)textureHeight / (float)textureWidth, 1.0f));
+    glm::mat4 scale = glm::scale( glm::mat4 (1.0f), glm::vec3(backgroundScale));
+    glm::mat4 translate;
+    glm::mat4 transformed = projection * scale * scaleBackground;
+
+
+    textureProgram->useProgram();
+    textureProgram->setUniforms(transformed, blackTexture, alpha);
+    textureQuad->bindData(textureProgram);
+    textureQuad->draw();
+
+    scale = glm::scale( glm::mat4 (1.0f), glm::vec3(3.0f, 0.7f, 1.0f));
+    translate = glm::translate( glm::mat4(1.0f), glm::vec3(translation, -0.5f, 0.0f)); 
+    transformed = projection * translate * scale;
+
+    glm::vec4 color = glm::vec4(1.0, 1.0, 1.0, 0.8);
+    colorProgram->useProgram();
+    colorProgram->setUniforms(transformed, color, alpha);
+    colorQuad->bindData(colorProgram);
+    colorQuad->draw();
+
+
+    float sx = 2.0 / 1024;
+    float sy = 2.0 / 768;
+    color = glm::vec4(0.0, 0.0, 0.0, 1.0);
+    translate = glm::translate( glm::mat4(1.0f), glm::vec3(0.45f + translation, -0.1f, 0.0f)); 
+    textProgram->useProgram();
+    textProgram->setUniforms(tex, translate, color, alpha);
+
+    start_text();
+    FT_Set_Pixel_Sizes(face, 0, 32);
+    render_text("Celebren con nosotros!! ",
+            -1 + 8 * sx,   1 - 480 * sy,   sx, sy);
+
+    color = glm::vec4(0.93, 0.25, 0.21, 1.0);
+    textProgram->setUniforms(tex, translate, color, alpha);
+    FT_Set_Pixel_Sizes(face, 0, 48);
+    render_text("#LUNARIO10 ",
+            -1 + 240 * sx,   1 - 540 * sy,   sx, sy);
+
+}
+
 void draw() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-    draw1();
+    glClearColor(alpha, alpha, alpha, 1.0f);
+    draw1(alpha);
+    // draw2(1 - alpha);
 }
 
 
@@ -211,6 +259,28 @@ void animate() {
     if(translation < -0.5f) {
         translation += 0.1f;
     }
+
+    // if(direction == -1) {
+    //     if(alpha > 0.0f) {
+    //         alpha -= 0.001f;
+    //         if(alpha <= 0.0f) {
+    //             alpha = 0.0f;
+    //             direction = 1;
+    //         }
+    //     } else {
+    //         direction = 1;
+    //     }
+    // } else {
+    //     if(alpha < 1.0f) {
+    //         alpha += 0.001f;
+    //         if(alpha >= 1.0f) {
+    //             alpha = 1.0f;
+    //             direction = -1;
+    //         }
+    //     } else {
+    //         direction = -1;
+    //     }
+    // }
 
 }
 
