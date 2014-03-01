@@ -22,6 +22,7 @@ static int whiteTexture;
 static int blackTexture;
 static int textureWidth;
 static int textureHeight;
+static int frame = 1;
 static int direction = -1;
 static float backgroundScale = 3.0f;
 static float translation = -5.0f;
@@ -189,11 +190,58 @@ void draw2(float alpha) {
 
 }
 
+void video(float alpha) {
+    glm::mat4 scale = glm::scale( glm::mat4 (1.0f), glm::vec3(2.0f, 3.0f, 1.0f));
+    glm::mat4 translate = glm::translate( glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)); 
+    glm::mat4 transformed = projection * translate * scale;
+
+    glm::vec4 color = glm::vec4(0.93, 0.25, 0.21, 1.0);
+
+    colorProgram->useProgram();
+    colorProgram->setUniforms(transformed, color, alpha);
+    colorQuad->bindData(colorProgram);
+    colorQuad->draw();
+    
+    std::stringstream path;
+
+    char num[4];
+
+    sprintf(num, "%03d", frame);
+
+    path << "videos/f65e6f845a2711e3ba591293cad68979_101/image-" << num << ".jpeg";
+
+    std::ifstream f(path.str());
+
+    if(!f.good()) {
+        frame = 1;
+        path.str("");
+        path << "videos/f65e6f845a2711e3ba591293cad68979_101/image-001.jpeg";
+    }
+
+    int w, h;
+    int videoTexture = loadTexture(path.str(), &w, &h);
+
+    scale = glm::scale( glm::mat4 (1.0f), glm::vec3(2.0f, 2.0f, 1.0f));
+    translate = glm::translate( glm::mat4(1.0f), glm::vec3(-0.4f, 0.0f, 0.0f)); 
+    transformed = projection * scale * translate;
+
+    textureProgram->useProgram();
+    textureProgram->setUniforms(transformed, videoTexture, alpha);
+    textureQuad->bindData(textureProgram);
+    textureQuad->draw();
+
+    frame += 1;
+
+    glDeleteTextures(1, (const GLuint*)&videoTexture);
+    
+}
+
 void draw() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     glClearColor(alpha, alpha, alpha, 1.0f);
-    draw1(alpha);
+    video(alpha);
+    // draw1(alpha);
     // draw2(1 - alpha);
 }
 
