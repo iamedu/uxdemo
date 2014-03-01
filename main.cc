@@ -23,6 +23,7 @@ static int textureWidth;
 static int textureHeight;
 static float backgroundScale = 3.0f;
 static float translation = -5.0f;
+static float alpha = 1.0f;
 static glm::mat4 projection;
 //TEXT
 static FT_Face face;
@@ -86,7 +87,6 @@ void init() {
      *
      */
 
-    // texture = loadTexture("textures/OpenGL_Tutorial_Texture.jpg", &w, &h);
     texture = loadTexture("textures/lunario10_whitebg01.png", &textureWidth, &textureHeight);
 
     glEnable( GL_LINE_SMOOTH );
@@ -100,10 +100,7 @@ void init() {
 }
 
 
-void draw() {
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-
+void draw1() {
     glm::mat4 scaleBackground = glm::scale( glm::mat4 (1.0f), glm::vec3(1.0f, (float)textureHeight / (float)textureWidth, 1.0f));
     glm::mat4 scale = glm::scale( glm::mat4 (1.0f), glm::vec3(backgroundScale));
     glm::mat4 translate;
@@ -111,7 +108,7 @@ void draw() {
 
 
     textureProgram->useProgram();
-    textureProgram->setUniforms(transformed, texture);
+    textureProgram->setUniforms(transformed, texture, alpha);
     textureQuad->bindData(textureProgram);
     textureQuad->draw();
 
@@ -121,7 +118,7 @@ void draw() {
 
     glm::vec4 color = glm::vec4(0.0, 0.0, 0.0, 0.8);
     colorProgram->useProgram();
-    colorProgram->setUniforms(transformed, color);
+    colorProgram->setUniforms(transformed, color, alpha);
     colorQuad->bindData(colorProgram);
     colorQuad->draw();
 
@@ -131,7 +128,7 @@ void draw() {
     color = glm::vec4(1.0, 1.0, 1.0, 1.0);
     translate = glm::translate( glm::mat4(1.0f), glm::vec3(0.45f + translation, -0.1f, 0.0f)); 
     textProgram->useProgram();
-    textProgram->setUniforms(tex, translate, color);
+    textProgram->setUniforms(tex, translate, color, alpha);
 
     start_text();
     FT_Set_Pixel_Sizes(face, 0, 32);
@@ -139,12 +136,19 @@ void draw() {
             -1 + 8 * sx,   1 - 480 * sy,   sx, sy);
 
     color = glm::vec4(0.93, 0.25, 0.21, 1.0);
-    textProgram->setUniforms(tex, translate, color);
+    textProgram->setUniforms(tex, translate, color, alpha);
     FT_Set_Pixel_Sizes(face, 0, 48);
     render_text("#LUNARIO10 ",
             -1 + 240 * sx,   1 - 540 * sy,   sx, sy);
 
 }
+
+void draw() {
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+    draw1();
+}
+
 
 void start_text() {
     glEnableVertexAttribArray(textProgram->getCoordAttributeLocation());
