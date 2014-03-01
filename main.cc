@@ -12,7 +12,6 @@
 
 static ColorShaderProgram *colorProgram;
 static TextureShaderProgram *textureProgram;
-static ColorQuad *background;
 static ColorQuad *colorQuad;
 static TextureQuad *textureQuad;
 static int texture;
@@ -27,7 +26,6 @@ void init() {
     colorProgram = new ColorShaderProgram("shaders/color.vsh", "shaders/color.fsh");
     textureProgram = new TextureShaderProgram("shaders/texture.vsh", "shaders/texture.fsh");
 
-    background = new ColorQuad();
     colorQuad = new ColorQuad();
     textureQuad = new TextureQuad();
 
@@ -47,11 +45,6 @@ void init() {
 void draw() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-    glm::vec4 color = glm::vec4(0.0, 0.0, 0.0, 0.9);
-    colorProgram->useProgram();
-    colorProgram->setUniforms(projection, color);
-    colorQuad->bindData(colorProgram);
-    colorQuad->draw();
 
     glm::mat4 scaleBackground = glm::scale( glm::mat4 (1.0f), glm::vec3(1.0f, (float)textureHeight / (float)textureWidth, 1.0f));
     glm::mat4 scale = glm::scale( glm::mat4 (1.0f), glm::vec3(backgroundScale));
@@ -62,6 +55,15 @@ void draw() {
     textureProgram->setUniforms(transformed, texture);
     textureQuad->bindData(textureProgram);
     textureQuad->draw();
+
+    scale = glm::scale( glm::mat4 (1.0f), glm::vec3(3.0f, 0.4f, 1.0f));
+    transformed = projection * scale;
+
+    glm::vec4 color = glm::vec4(0.0, 0.0, 0.0, 0.8);
+    colorProgram->useProgram();
+    colorProgram->setUniforms(transformed, color);
+    colorQuad->bindData(colorProgram);
+    colorQuad->draw();
 
     // glutSwapBuffers();
 }
