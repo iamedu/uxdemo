@@ -130,7 +130,7 @@ void draw1(float alpha) {
     float sx = 2.0 / 1024;
     float sy = 2.0 / 768;
     color = glm::vec4(1.0, 1.0, 1.0, 1.0);
-    translate = glm::translate( glm::mat4(1.0f), glm::vec3(0.45f + translation, -0.1f, 0.0f)); 
+    translate = glm::translate( glm::mat4(2.0f), glm::vec3(0.45f + translation, -0.1f, 0.0f)); 
     textProgram->useProgram();
     textProgram->setUniforms(tex, translate, color, alpha);
 
@@ -191,16 +191,9 @@ void draw2(float alpha) {
 }
 
 void video(float alpha) {
-    glm::mat4 scale = glm::scale( glm::mat4 (1.0f), glm::vec3(2.0f, 3.0f, 1.0f));
-    glm::mat4 translate = glm::translate( glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)); 
-    glm::mat4 transformed = projection * translate * scale;
-
-    glm::vec4 color = glm::vec4(0.93, 0.25, 0.21, 1.0);
-
-    colorProgram->useProgram();
-    colorProgram->setUniforms(transformed, color, alpha);
-    colorQuad->bindData(colorProgram);
-    colorQuad->draw();
+    glm::mat4 scale;
+    glm::mat4 translate;
+    glm::mat4 transformed;
     
     std::stringstream path;
 
@@ -222,7 +215,7 @@ void video(float alpha) {
     int videoTexture = loadTexture(path.str(), &w, &h);
 
     scale = glm::scale( glm::mat4 (1.0f), glm::vec3(2.0f, 2.0f, 1.0f));
-    translate = glm::translate( glm::mat4(1.0f), glm::vec3(-0.4f, 0.0f, 0.0f)); 
+    translate = glm::translate( glm::mat4(1.0f), glm::vec3(-0.4, 0.0f, 0.0f)); 
     transformed = projection * scale * translate;
 
     textureProgram->useProgram();
@@ -233,7 +226,38 @@ void video(float alpha) {
     frame += 1;
 
     glDeleteTextures(1, (const GLuint*)&videoTexture);
-    
+
+    scale = glm::scale( glm::mat4 (1.0f), glm::vec3(2.0f, 3.0f, 1.0f));
+    translate = glm::translate( glm::mat4(1.0f), glm::vec3(1.2f, 0.0f, 0.0f)); 
+    transformed = projection * translate * scale;
+
+    glm::vec4 color = glm::vec4(0.93, 0.25, 0.21, 1.0);
+
+    colorProgram->useProgram();
+    colorProgram->setUniforms(transformed, color, alpha);
+    colorQuad->bindData(colorProgram);
+    colorQuad->draw();
+
+    scale = glm::scale( glm::mat4 (1.0f), glm::vec3(4.0f, 4.0f, 1.0f));
+    translate = glm::translate( glm::mat4(1.0f), glm::vec3(-1.5f, -1.0f, 0.0f)); 
+    transformed = projection * translate * scale;
+    colorProgram->useProgram();
+    colorProgram->setUniforms(transformed, color, 0.3);
+    colorQuad->bindData(colorProgram);
+    colorQuad->draw();
+
+    float sx = 2.0 / 1024;
+    float sy = 2.0 / 768;
+    color = glm::vec4(1.0, 1.0, 1.0, 1.0);
+    translate = glm::translate( glm::mat4(1.0f), glm::vec3(1.2f, 1.0f, 0.0f)); 
+    textProgram->useProgram();
+    textProgram->setUniforms(tex, translate, color, alpha);
+
+    start_text();
+    FT_Set_Pixel_Sizes(face, 0, 32);
+    render_text("Celebren con nosotros!! ",
+            -1 + 8 * sx,   1 - 480 * sy,   sx, sy);
+
 }
 
 void draw() {
