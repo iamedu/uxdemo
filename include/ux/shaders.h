@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <iostream>
 #include <ux/gl.h>
 
 GLuint CreateShader(GLenum shaderType, std::string shaderSource);
@@ -37,13 +38,13 @@ class ColorShaderProgram : public ShaderProgram {
 class TextureShaderProgram : public ShaderProgram {
     private:
         GLuint aPositionLocation;
-        GLuint aColorLocation;
+        GLuint aTextureCoordinatesLocation;
         GLuint uTextureUnitLocation;
 
     public:
         TextureShaderProgram(std::string vshPath, std::string fshPath) : ShaderProgram(vshPath, fshPath) {
             aPositionLocation = glGetAttribLocation(program, "position");
-            aColorLocation = glGetAttribLocation(program, "color");
+            aTextureCoordinatesLocation = glGetAttribLocation(program, "textureCoordinates");
             uTextureUnitLocation = glGetUniformLocation(program, "textureUnit");
         }
 
@@ -57,8 +58,8 @@ class TextureShaderProgram : public ShaderProgram {
             return aPositionLocation;
         }
 
-        GLuint getColorAttributeLocation() {
-            return aColorLocation;
+        GLuint getTextureCoordinatesAttributeLocation() {
+            return aTextureCoordinatesLocation;
         }
 };
 

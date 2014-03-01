@@ -8,29 +8,49 @@
 #include <ux/util.h>
 #include <ux/shaders.h>
 #include <ux/shapes.h>
+#include <ux/texture.h>
 
 static ColorShaderProgram *colorProgram;
+static TextureShaderProgram *textureProgram;
 static ColorQuad *colorQuad;
+static TextureQuad *textureQuad;
+static int texture;
 
 void init() {
     colorProgram = new ColorShaderProgram("shaders/color.vsh", "shaders/color.fsh");
+    textureProgram = new TextureShaderProgram("shaders/texture.vsh", "shaders/texture.fsh");
 
     colorQuad = new ColorQuad();
+    textureQuad = new TextureQuad();
+
+    int w, h;
+
+    texture = loadTexture("textures/OpenGL_Tutorial_Texture.jpg", &w, &h);
+    // texture = loadTexture("textures/lunario10_whitebg01.png", &w, &h);
 
     glEnable( GL_LINE_SMOOTH );
     glEnable( GL_POLYGON_SMOOTH );
     glHint( GL_LINE_SMOOTH_HINT, GL_NICEST );
     glHint( GL_POLYGON_SMOOTH_HINT, GL_NICEST );
+
+    // Enable alpha blending.
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void GLUT_display() {
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    colorProgram->useProgram();
-
-    colorQuad->bindData(colorProgram);
-    colorQuad->draw();
+    // colorProgram->useProgram();
+    //
+    // colorQuad->bindData(colorProgram);
+    // colorQuad->draw();
+    
+    textureProgram->useProgram();
+    textureProgram->setUniforms(texture);
+    textureQuad->bindData(textureProgram);
+    textureQuad->draw();
 
     glutSwapBuffers();
 }

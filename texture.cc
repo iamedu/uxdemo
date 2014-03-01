@@ -2,7 +2,7 @@
 #include <SOIL/SOIL.h>
 #include <iostream>
 
-GLuint loadTexture(GLenum texture, std::string path) {
+GLuint loadTexture(std::string path) {
     glActiveTexture(GL_TEXTURE0);
 
     GLuint texture_id = SOIL_load_OGL_texture
@@ -17,10 +17,15 @@ GLuint loadTexture(GLenum texture, std::string path) {
         std::cerr << "SOIL loading error: '" << SOIL_last_result() << "' (" << path << ")" << std::endl;
     }
 
+    // glBindTexture(GL_TEXTURE_2D, texture_id);
+    // glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    // glBindTexture(GL_TEXTURE_2D, 0);
+
     return texture_id;
 }
 
-GLuint loadTexture(GLenum texture, std::string path, int *width, int *height) {
+GLuint loadTexture(std::string path, int *width, int *height) {
     GLuint texture_id;
     glActiveTexture(GL_TEXTURE0);
 
@@ -28,6 +33,7 @@ GLuint loadTexture(GLenum texture, std::string path, int *width, int *height) {
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, *width, *height, 0, GL_RGB, GL_UNSIGNED_BYTE, img);
 
     return texture_id; 
