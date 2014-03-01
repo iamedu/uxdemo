@@ -34,3 +34,31 @@ class ColorShaderProgram : public ShaderProgram {
         }
 };
 
+class TextureShaderProgram : public ShaderProgram {
+    private:
+        GLuint aPositionLocation;
+        GLuint aColorLocation;
+        GLuint uTextureUnitLocation;
+
+    public:
+        TextureShaderProgram(std::string vshPath, std::string fshPath) : ShaderProgram(vshPath, fshPath) {
+            aPositionLocation = glGetAttribLocation(program, "position");
+            aColorLocation = glGetAttribLocation(program, "color");
+            uTextureUnitLocation = glGetUniformLocation(program, "textureUnit");
+        }
+
+        void setUniforms(GLuint textureId) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glUniform1i(uTextureUnitLocation, 0);
+        }
+
+        GLuint getPositionAttributeLocation() {
+            return aPositionLocation;
+        }
+
+        GLuint getColorAttributeLocation() {
+            return aColorLocation;
+        }
+};
+
