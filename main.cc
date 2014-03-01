@@ -26,8 +26,8 @@ void init() {
 
     int w, h;
 
-    // texture = loadTexture("textures/OpenGL_Tutorial_Texture.jpg");
-    texture = loadTexture("textures/lunario10_whitebg01.png");
+    texture = loadTexture("textures/OpenGL_Tutorial_Texture.jpg", &w, &h);
+    // texture = loadTexture("textures/lunario10_whitebg01.png", &w, &h);
 
     glEnable( GL_LINE_SMOOTH );
     glEnable( GL_POLYGON_SMOOTH );
