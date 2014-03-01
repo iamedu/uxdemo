@@ -18,6 +18,7 @@ static int texture;
 static int textureWidth;
 static int textureHeight;
 static float backgroundScale = 3.0f;
+static float translation = -5.0f;
 glm::mat4 projection;
 
 void init() {
@@ -48,6 +49,7 @@ void draw() {
 
     glm::mat4 scaleBackground = glm::scale( glm::mat4 (1.0f), glm::vec3(1.0f, (float)textureHeight / (float)textureWidth, 1.0f));
     glm::mat4 scale = glm::scale( glm::mat4 (1.0f), glm::vec3(backgroundScale));
+    glm::mat4 translate;
     glm::mat4 transformed = projection * scale * scaleBackground;
 
 
@@ -56,8 +58,9 @@ void draw() {
     textureQuad->bindData(textureProgram);
     textureQuad->draw();
 
-    scale = glm::scale( glm::mat4 (1.0f), glm::vec3(3.0f, 0.4f, 1.0f));
-    transformed = projection * scale;
+    scale = glm::scale( glm::mat4 (1.0f), glm::vec3(3.0f, 0.7f, 1.0f));
+    translate = glm::translate( glm::mat4(1.0f), glm::vec3(translation, -0.5f, 0.0f)); 
+    transformed = projection * translate * scale;
 
     glm::vec4 color = glm::vec4(0.0, 0.0, 0.0, 0.8);
     colorProgram->useProgram();
@@ -78,6 +81,10 @@ void resize(int w, int h) {
 
 void animate() {
     backgroundScale += 0.0008f;
+
+    if(translation < -0.5f) {
+        translation += 0.1f;
+    }
 
     // glutPostRedisplay();
 }
