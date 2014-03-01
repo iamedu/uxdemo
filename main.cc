@@ -68,7 +68,6 @@ void draw() {
     colorQuad->bindData(colorProgram);
     colorQuad->draw();
 
-    // glutSwapBuffers();
 }
 
 void resize(int w, int h) {
@@ -86,22 +85,10 @@ void animate() {
         translation += 0.1f;
     }
 
-    // glutPostRedisplay();
 }
 
 
 int main(int argc, char *argv[]) {
-
-    // glutInit(&argc, argv);
-    // glutInitDisplayMode(GLUT_DOUBLE | GLUT_ALPHA | GLUT_STENCIL | GLUT_DEPTH | GLUT_RGBA);
-    // glutInitWindowSize(800, 2560);
-    // glutInitWindowPosition(200, 100);
-    // glutCreateWindow(argv[0]);
-    // glutFullScreen();
-    //
-    // glutIdleFunc( animate );
-    // glutDisplayFunc(draw);
-    // glutReshapeFunc(resize);
     GLFWwindow* window;
 
     /* Initialize the library */
@@ -122,7 +109,6 @@ int main(int argc, char *argv[]) {
 
     init();
     resize(mode->width, mode->height);
-    // glutMainLoop();
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
