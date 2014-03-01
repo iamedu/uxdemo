@@ -15,6 +15,7 @@ static TextureShaderProgram *textureProgram;
 static ColorQuad *colorQuad;
 static TextureQuad *textureQuad;
 static int texture;
+glm::mat4 projection;
 
 void init() {
     colorProgram = new ColorShaderProgram("shaders/color.vsh", "shaders/color.fsh");
@@ -43,12 +44,12 @@ void GLUT_display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     colorProgram->useProgram();
-
+    colorProgram->setUniforms(projection);
     colorQuad->bindData(colorProgram);
     colorQuad->draw();
     
     textureProgram->useProgram();
-    textureProgram->setUniforms(texture);
+    textureProgram->setUniforms(projection, texture);
     textureQuad->bindData(textureProgram);
     textureQuad->draw();
 
@@ -57,6 +58,10 @@ void GLUT_display() {
 
 void GLUT_reshape(int w, int h) {
     glViewport(0, 0, w, h);
+
+    float aspectRatio = (float)w / (float)h; 
+
+    projection = glm::ortho( -aspectRatio, aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f );
 }
 
 
