@@ -15,7 +15,7 @@ static ColorQuad *colorQuad;
 glm::mat4 projectionMatrix;
 
 void init() {
-    colorProgram = new ColorShaderProgram("shaders/main.vsh", "shaders/main.fsh");
+    colorProgram = new ColorShaderProgram("shaders/color.vsh", "shaders/color.fsh");
 
     colorQuad = new ColorQuad();
 
