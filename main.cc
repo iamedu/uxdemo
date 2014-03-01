@@ -10,8 +10,12 @@
 #include <ux/shapes.h>
 #include <ux/texture.h>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 static ColorShaderProgram *colorProgram;
 static TextureShaderProgram *textureProgram;
+static TextShaderProgram *textProgram;
 static ColorQuad *colorQuad;
 static TextureQuad *textureQuad;
 static int texture;
@@ -19,16 +23,68 @@ static int textureWidth;
 static int textureHeight;
 static float backgroundScale = 3.0f;
 static float translation = -5.0f;
-glm::mat4 projection;
+static glm::mat4 projection;
+//TEXT
+static FT_Face face;
+static GLuint tex;
+static GLuint vbo;
+
+void start_text();
+void render_text(const char *text, float x, float y, float sx, float sy);
 
 void init() {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     colorProgram = new ColorShaderProgram("shaders/color.vsh", "shaders/color.fsh");
     textureProgram = new TextureShaderProgram("shaders/texture.vsh", "shaders/texture.fsh");
+    textProgram = new TextShaderProgram("shaders/text.vsh", "shaders/text.fsh");
 
     colorQuad = new ColorQuad();
     textureQuad = new TextureQuad();
+
+    /*
+     *
+     * Text gets up to here
+     *
+     *
+     *
+     */
+
+    FT_Library ft;
+
+    if(FT_Init_FreeType(&ft)) {
+        fprintf(stderr, "Could not init freetype library\n");
+        exit(1);
+    }
+
+    if(FT_New_Face(ft, "fonts/Replica-Regular.ttf", 0, &face)) {
+        fprintf(stderr, "Could not open font\n");
+        exit(1);
+    }
+
+    FT_Set_Pixel_Sizes(face, 0, 48);
+
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    glGenBuffers(1, &vbo);
+
+
+    /*
+     *
+     * Text gets up to here
+     *
+     *
+     *
+     */
 
     // texture = loadTexture("textures/OpenGL_Tutorial_Texture.jpg", &w, &h);
     texture = loadTexture("textures/lunario10_whitebg01.png", &textureWidth, &textureHeight);
@@ -42,6 +98,7 @@ void init() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
+
 
 void draw() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -68,6 +125,72 @@ void draw() {
     colorQuad->bindData(colorProgram);
     colorQuad->draw();
 
+
+    float sx = 2.0 / 1024;
+    float sy = 2.0 / 768;
+    color = glm::vec4(1.0, 1.0, 1.0, 1.0);
+    translate = glm::translate( glm::mat4(1.0f), glm::vec3(0.45f + translation, -0.1f, 0.0f)); 
+    textProgram->useProgram();
+    textProgram->setUniforms(tex, translate, color);
+
+    start_text();
+    FT_Set_Pixel_Sizes(face, 0, 32);
+    render_text("Celebren con nosotros!! ",
+            -1 + 8 * sx,   1 - 480 * sy,   sx, sy);
+
+    color = glm::vec4(0.93, 0.25, 0.21, 1.0);
+    textProgram->setUniforms(tex, translate, color);
+    FT_Set_Pixel_Sizes(face, 0, 48);
+    render_text("#LUNARIO10 ",
+            -1 + 240 * sx,   1 - 540 * sy,   sx, sy);
+
+}
+
+void start_text() {
+    glEnableVertexAttribArray(textProgram->getCoordAttributeLocation());
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glVertexAttribPointer(textProgram->getCoordAttributeLocation(), 4, GL_FLOAT, GL_FALSE, 0, 0);
+}
+
+void render_text(const char *text, float x, float y, float sx, float sy) {
+    const char *p;
+
+    FT_GlyphSlot g = face->glyph;
+
+    for(p = text; *p; p++) {
+        if(FT_Load_Char(face, *p, FT_LOAD_RENDER))
+            continue;
+
+        glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_ALPHA,
+                g->bitmap.width,
+                g->bitmap.rows,
+                0,
+                GL_ALPHA,
+                GL_UNSIGNED_BYTE,
+                g->bitmap.buffer
+                );
+
+        float x2 = x + g->bitmap_left * sx;
+        float y2 = -y - g->bitmap_top * sy;
+        float w = g->bitmap.width * sx;
+        float h = g->bitmap.rows * sy;
+
+        GLfloat box[4][4] = {
+            {x2,     -y2    , 0, 0},
+            {x2 + w, -y2    , 1, 0},
+            {x2,     -y2 - h, 0, 1},
+            {x2 + w, -y2 - h, 1, 1},
+        };
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof box, box, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+        x += (g->advance.x >> 6) * sx;
+        y += (g->advance.y >> 6) * sy;
+    }
 }
 
 void resize(int w, int h) {
@@ -96,7 +219,7 @@ int main(int argc, char *argv[]) {
         return -1;
 
     const GLFWvidmode *mode = glfwGetVideoMode( glfwGetPrimaryMonitor() );
-    window = glfwCreateWindow(mode->width, mode->height, "Hello World", glfwGetPrimaryMonitor(), NULL);
+    window = glfwCreateWindow(mode->width, mode->height, "UX Demo", glfwGetPrimaryMonitor(), NULL);
     if (!window)
     {
         glfwTerminate();

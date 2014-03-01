@@ -70,3 +70,30 @@ class TextureShaderProgram : public ShaderProgram {
         }
 };
 
+class TextShaderProgram : public ShaderProgram {
+    private:
+        GLuint aCoordLocation;
+        GLuint uProjectionMatrixLocation;
+        GLuint uTextureUnitLocation;
+        GLuint uColorLocation;
+
+    public:
+        TextShaderProgram(std::string vshPath, std::string fshPath) : ShaderProgram(vshPath, fshPath) {
+            aCoordLocation = glGetAttribLocation(program, "coord");
+            uColorLocation = glGetUniformLocation(program, "color");
+            uProjectionMatrixLocation = glGetUniformLocation(program, "projection");
+            uTextureUnitLocation = glGetUniformLocation(program, "tex");
+        }
+
+        void setUniforms(GLuint textureId, glm::mat4 projection, glm::vec4 color) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glUniform1i(uTextureUnitLocation, 0);
+            glUniform4fv( uColorLocation, 1, glm::value_ptr( color ) );
+            glUniformMatrix4fv( uProjectionMatrixLocation, 1, GL_FALSE, glm::value_ptr( projection ) );
+        }
+
+        GLuint getCoordAttributeLocation() {
+            return aCoordLocation;
+        }
+};
