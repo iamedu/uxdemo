@@ -24,6 +24,7 @@ static int textureWidth;
 static int textureHeight;
 static int frame = 1;
 static int direction = -1;
+static double lastTime;
 static float backgroundScale = 3.0f;
 static float translation = -5.0f;
 static float alpha = 1.0f;
@@ -101,6 +102,8 @@ void init() {
     // Enable alpha blending.
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glfwSetTime(0);
 }
 
 
@@ -197,6 +200,14 @@ void video(float alpha) {
     
     std::stringstream path;
 
+    double currentTime = glfwGetTime();
+
+    if(currentTime - lastTime >= 1.0) {
+        frame += (int)(lastTime - currentTime);
+    }
+
+    lastTime = glfwGetTime();
+
     char num[4];
 
     sprintf(num, "%03d", frame);
@@ -209,6 +220,7 @@ void video(float alpha) {
         frame = 1;
         path.str("");
         path << "videos/f65e6f845a2711e3ba591293cad68979_101/image-001.jpeg";
+        glfwSetTime(0);
     }
 
     int w, h;
