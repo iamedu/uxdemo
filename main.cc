@@ -42,10 +42,10 @@ void GLUT_display() {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // colorProgram->useProgram();
-    //
-    // colorQuad->bindData(colorProgram);
-    // colorQuad->draw();
+    colorProgram->useProgram();
+
+    colorQuad->bindData(colorProgram);
+    colorQuad->draw();
     
     textureProgram->useProgram();
     textureProgram->setUniforms(texture);
