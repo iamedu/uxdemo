@@ -2,9 +2,10 @@
 
 #define GL_GLEXT_PROTOTYPES
 
+#include <GLFW/glfw3.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <GL/glut.h>
+
 
 #define GLM_FORCE_RADIANS
 

@@ -18,27 +18,25 @@ class ShaderProgram {
 class ColorShaderProgram : public ShaderProgram {
     private:
         GLuint aPositionLocation;
-        GLuint aColorLocation;
         GLuint uProjectionMatrixLocation;
+        GLuint uColorLocation;
 
     public:
         ColorShaderProgram(std::string vshPath, std::string fshPath) : ShaderProgram(vshPath, fshPath) {
             aPositionLocation = glGetAttribLocation(program, "position");
-            aColorLocation = glGetAttribLocation(program, "color");
+            uColorLocation = glGetUniformLocation(program, "color");
             uProjectionMatrixLocation = glGetUniformLocation(program, "projectionMatrix");
         }
 
-        void setUniforms(glm::mat4 projection) {
+        void setUniforms(glm::mat4 projection, glm::vec4 color) {
             glUniformMatrix4fv( uProjectionMatrixLocation, 1, GL_FALSE, glm::value_ptr( projection ) );
+            glUniform4fv( uColorLocation, 1, glm::value_ptr( color ) );
         }
 
         GLuint getPositionAttributeLocation() {
             return aPositionLocation;
         }
 
-        GLuint getColorAttributeLocation() {
-            return aColorLocation;
-        }
 };
 
 class TextureShaderProgram : public ShaderProgram {

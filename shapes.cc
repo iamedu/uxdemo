@@ -17,12 +17,6 @@ void ColorQuad::bindData(ColorShaderProgram *shaderProgram) {
             shaderProgram->getPositionAttributeLocation(),
             4,
             0);
-
-    vertexArray->setVertexAttribPointer(
-            (void *)64,
-            shaderProgram->getColorAttributeLocation(),
-            4,
-            0);
 }
 
 void ColorQuad::draw() {
@@ -55,11 +49,11 @@ void TextureQuad::bindData(TextureShaderProgram *shaderProgram) {
             2,
             stride);
     
-    vertexArray->setVertexAttribPointer(
-            0,
-            shaderProgram->getTextureCoordinatesAttributeLocation(),
-            2,
-            stride);
+    // vertexArray->setVertexAttribPointer(
+    //         0,
+    //         shaderProgram->getTextureCoordinatesAttributeLocation(),
+    //         2,
+    //         stride);
 
     vertexArray->setVertexAttribPointer(
             (void *)8, //positionComponentCount
