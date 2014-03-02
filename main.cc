@@ -13,6 +13,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+static const GLFWvidmode *mode;
 static ColorShaderProgram *colorProgram;
 static TextureShaderProgram *textureProgram;
 static TextShaderProgram *textProgram;
@@ -131,7 +132,7 @@ void draw1(float alpha) {
     colorQuad->draw();
 
 
-    float sx = 2.0 / 1024;
+    float sx = 2.0 / 768;
     float sy = 2.0 / 768;
     color = glm::vec4(1.0, 1.0, 1.0, 1.0);
     translate = glm::translate( glm::mat4(2.0f), glm::vec3(0.45f + translation, -0.1f, 0.0f)); 
@@ -143,7 +144,10 @@ void draw1(float alpha) {
     render_text("Celebren con nosotros!! ",
             -1 + 8 * sx,   1 - 480 * sy,   sx, sy);
 
-    color = glm::vec4(0.93, 0.25, 0.21, 1.0);
+    sx = 2.0 / 768;
+    sy = 2.0 / 1024;
+
+    color = glm::vec4(1.0, 1.0, 1.0, 1.0);
     textProgram->setUniforms(tex, translate, color, alpha);
     FT_Set_Pixel_Sizes(face, 0, 48);
     render_text("#LUNARIO10 ",
@@ -174,7 +178,7 @@ void draw2(float alpha) {
     colorQuad->draw();
 
 
-    float sx = 2.0 / 1024;
+    float sx = 2.0 / 768;
     float sy = 2.0 / 768;
     color = glm::vec4(0.0, 0.0, 0.0, 1.0);
     translate = glm::translate( glm::mat4(1.0f), glm::vec3(0.45f + translation, -0.1f, 0.0f)); 
@@ -259,8 +263,8 @@ void video(float alpha) {
     colorQuad->bindData(colorProgram);
     colorQuad->draw();
 
-    float sx = 2.0 / 1024;
-    float sy = 2.0 / 768;
+    float sx = 2.0 / mode->width;
+    float sy = 2.0 / mode->height;
     color = glm::vec4(1.0, 1.0, 1.0, 1.0);
     translate = glm::translate( glm::mat4(1.0f), glm::vec3(1.2f, 1.0f, 0.0f)); 
     textProgram->useProgram();
@@ -377,7 +381,7 @@ int main(int argc, char *argv[]) {
     if (!glfwInit())
         return -1;
 
-    const GLFWvidmode *mode = glfwGetVideoMode( glfwGetPrimaryMonitor() );
+    mode = glfwGetVideoMode( glfwGetPrimaryMonitor() );
     window = glfwCreateWindow(mode->width, mode->height, "UX Demo", glfwGetPrimaryMonitor(), NULL);
     if (!window)
     {
