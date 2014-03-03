@@ -38,9 +38,7 @@ void download_file(std::string url, std::string filename) {
 
     std::stringstream ss;
 
-    ss << getenv("HOME");
-    ss << "/.uxdemo/";
-    ss << "hola.png";
+    ss << getenv("HOME") << "/.uxdemo/" << filename;
 
     struct HttpFile httpFile={
         ss.str(), /* name to store the file as if succesful */ 
@@ -61,6 +59,10 @@ void download_file(std::string url, std::string filename) {
             std::cout << "curl told us " << res << std::endl;
         }
 
+        if(httpFile.stream) {
+            fclose(httpFile.stream); /* close the local file */ 
+        }
+
     }
     curl_global_cleanup();
 }
@@ -72,7 +74,13 @@ void download_process() {
     home << "/.uxdemo";
 
     mkdir(home.str().data(), 0777);
+
     download_file("http://uxtweet.herokuapp.com/general/background", "background.png");
+    download_file("http://uxtweet.herokuapp.com/api/v1/twitter/list-approved-tweets", "list-approved-tweets.edn");
+    download_file("http://uxtweet.herokuapp.com/api/v1/twitter/list-not-approved-ids", "list-not-approved-tweets.edn");
+    download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-approved-instagrams", "list-approved-instagrams.edn");
+    download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-not-approved-links", "list-not-approved-instagrams.edn");
+
 
 }
 
@@ -83,6 +91,8 @@ void *do_download(void*) {
         std::cout << "Downloading files" << std::endl;
 
         download_process();
+
+        std::cout << "Finished downloading" << std::endl;
 
     }
 }
