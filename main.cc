@@ -9,6 +9,7 @@
 #include <ux/texture.h>
 #include <ux/script.h>
 #include <ux/download.h>
+#include <ux/data.h>
 
 #include <fstream>
 

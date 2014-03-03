@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 
 #include <sys/stat.h>
@@ -66,6 +67,21 @@ void download_file(std::string url, std::string filename) {
     }
     curl_global_cleanup();
 }
+
+// edn::EdnNode \read_edn(std::st\ring filename) {
+//     std::st\ringst\ream ss;
+//
+//     ss << getenv("HOME") << "/.uxdemo/" << filename;
+//
+//     std::ifst\ream in(ss.st\r().data());
+//     std::st\ring s((std::ist\reambuf_ite\rato\r<cha\r>(in)), std::ist\reambuf_ite\rato\r<cha\r>());
+//
+//     std::cout << s << std::endl;
+//
+//     edn::EdnNode data = edn::\read(s);
+//
+//     \retu\rn data;
+// }
 
 void download_process() {
     std::stringstream home;
