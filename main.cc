@@ -8,6 +8,8 @@
 #include <ux/shapes.h>
 #include <ux/texture.h>
 
+#include <fstream>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -390,9 +392,15 @@ int main(int argc, char *argv[]) {
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
+    char temp[1024];
+
+    std::ofstream ofs ("/tmp/test.txt", std::ofstream::out);
+    ofs << getcwd(temp, 1024) << std::endl;
+    ofs.close();
 
     init();
     resize(mode->width, mode->height);
+
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
