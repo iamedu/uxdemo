@@ -22,7 +22,7 @@ const GLfloat textureQuadVertices[] = {
 
 class ColorQuad {
     private:
-        std::unique_ptr<VertexArray> vertexArray;
+        VertexArray *vertexArray;
     public:
         ColorQuad();
         void bindData(ColorShaderProgram *shaderProgram);
@@ -31,7 +31,7 @@ class ColorQuad {
 
 class TextureQuad {
     private:
-        std::unique_ptr<VertexArray> vertexArray;
+        VertexArray *vertexArray;
     public:
         TextureQuad();
         void bindData(TextureShaderProgram *shaderProgram);

@@ -5,8 +5,7 @@
 #include <ux/shapes.h>
 
 ColorQuad::ColorQuad() {
-    std::unique_ptr<VertexArray> tmp(new VertexArray((const GLfloat *)quadVertices, sizeof(quadVertices)));
-    vertexArray = std::move(tmp);
+    vertexArray = new VertexArray((const GLfloat *)quadVertices, sizeof(quadVertices));
 }
 
 void ColorQuad::bindData(ColorShaderProgram *shaderProgram) {
@@ -31,8 +30,7 @@ void ColorQuad::draw() {
 }
 
 TextureQuad::TextureQuad() {
-    std::unique_ptr<VertexArray> tmp(new VertexArray((const GLfloat *)textureQuadVertices, sizeof(textureQuadVertices)));
-    vertexArray = std::move(tmp);
+    vertexArray = new VertexArray((const GLfloat *)textureQuadVertices, sizeof(textureQuadVertices));
 }
 
 void TextureQuad::bindData(TextureShaderProgram *shaderProgram) {

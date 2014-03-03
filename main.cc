@@ -2,8 +2,6 @@
 #include <cstdio>
 #include <cmath>
 
-#include <error.h>
-
 #include <ux/gl.h>
 #include <ux/util.h>
 #include <ux/shaders.h>
@@ -219,7 +217,7 @@ void video(float alpha) {
 
     path << "videos/f65e6f845a2711e3ba591293cad68979_101/image-" << num << ".jpeg";
 
-    std::ifstream f(path.str());
+    std::ifstream f(path.str().c_str());
 
     if(!f.good()) {
         frame = 1;
@@ -281,9 +279,9 @@ void draw() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     glClearColor(alpha, alpha, alpha, 1.0f);
-    video(alpha);
-    // draw1(alpha);
-    // draw2(1 - alpha);
+    //video(alpha);
+    draw1(alpha);
+    //draw2(1 - alpha);
 }
 
 
