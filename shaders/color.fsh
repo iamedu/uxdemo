@@ -1,4 +1,4 @@
-#version 130
+#version 120
 
 uniform vec4 color;
 uniform float alpha;
