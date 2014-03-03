@@ -1,4 +1,5 @@
 #include <ux/download.h>
+#include <ux/data.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -8,6 +9,7 @@
 #include <sstream>
 
 #include <sys/stat.h>
+
 
 #include "json.h"
 
@@ -70,7 +72,7 @@ void download_file(std::string url, std::string filename) {
     curl_global_cleanup();
 }
 
-void read_json(std::string filename) {
+json_value * read_json(std::string filename) {
     std::stringstream ss;
 
     ss << getenv("HOME") << "/.uxdemo/" << filename;
@@ -81,12 +83,11 @@ void read_json(std::string filename) {
     char *errorPos = 0;
     char *errorDesc = 0;
     int errorLine = 0;
-    block_allocator allocator(1 << 10); // 1 KB per block
+    block_allocator allocator(1 << 20); // 1 KB per block
 
-    char *c = (char *)malloc(s.size() + 1);
-    strcpy(c, s.data());
-            
-    json_value *root = json_parse(c, &errorPos, (const char **)&errorDesc, &errorLine, &allocator);
+    char * data = (char *)s.data();
+
+    return json_parse(data, &errorPos, (const char **)&errorDesc, &errorLine, &allocator);
 
 
 }
@@ -99,14 +100,123 @@ void download_process() {
 
     mkdir(home.str().data(), 0777);
 
+//     json_value *invalid_tweets = \read_json("list-not-app\roved-tweets.json");
+//
+//     json_value *invalid_instag\rams = \read_json("list-not-app\roved-instag\rams.json");
+
     download_file("http://uxtweet.herokuapp.com/general/background", "background.png");
     download_file("http://uxtweet.herokuapp.com/api/v1/twitter/list-approved-tweets", "list-approved-tweets.json");
     download_file("http://uxtweet.herokuapp.com/api/v1/twitter/list-not-approved-ids", "list-not-approved-tweets.json");
     download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-approved-instagrams", "list-approved-instagrams.json");
     download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-not-approved-links", "list-not-approved-instagrams.json");
 
-    read_json("list-approved-tweets.json");
+    json_value *json_tweets = read_json("list-approved-tweets.json");
+    tweets.clear();
 
+    for (json_value *it = json_tweets->first_child; it; it = it->next_sibling) {
+        if(it->type == JSON_OBJECT) {
+            std::string status;
+            std::string slug;
+            std::string picture_url;
+            std::string name;
+            std::string twitter_id;
+
+            for (json_value *it1 = it->first_child; it1; it1 = it1->next_sibling) {
+                if(it1->type == JSON_NULL) {
+                    continue;
+                }
+                if(strcmp(it1->name, "status") == 0) {
+                    status = it1->string_value;
+                }
+                if(strcmp(it1->name, "slug") == 0) {
+                    slug = it1->string_value;
+                }
+                if(strcmp(it1->name, "picture_url") == 0) {
+                    picture_url = it1->string_value;
+                }
+                if(strcmp(it1->name, "name") == 0) {
+                    name = it1->string_value;
+                }
+                if(strcmp(it1->name, "twitter_id") == 0) {
+                    twitter_id = it1->string_value;
+                }
+            }
+
+            Twitt *twitt = new Twitt(status, slug, picture_url,name, twitter_id);
+            tweets.push_back(twitt);
+
+
+            home.str("");
+            home << getenv("HOME") << "/.uxdemo/twitter/" << twitter_id;
+            mkdir(home.str().data(), 0777);
+
+            if(picture_url.size() > 0) {
+                home.str("");
+                home << "twitter/" << twitter_id << "/picture_url";
+                download_file(picture_url, home.str().data());
+            }
+
+        }
+    }
+
+    json_value *json_instagrams = read_json("list-approved-instagrams.json");
+    instagrams.clear();
+
+
+    for (json_value *it = json_instagrams->first_child; it; it = it->next_sibling) {
+        if(it->type == JSON_OBJECT) {
+            int video;
+            std::string link;
+            std::string name;
+            std::string profile_url;
+            std::string standard_resolution;
+            std::string tags = "";
+
+            for (json_value *it1 = it->first_child; it1; it1 = it1->next_sibling) {
+                if(strcmp(it1->name, "link") == 0) {
+                    link = it1->string_value;
+                }
+                if(strcmp(it1->name, "name") == 0) {
+                    name = it1->string_value;
+                }
+                if(strcmp(it1->name, "profile_url") == 0) {
+                    profile_url = it1->string_value;
+                }
+                if(strcmp(it1->name, "standard_resolution") == 0) {
+                    standard_resolution = it1->string_value;
+                }
+                if(strcmp(it1->name, "video") == 0) {
+                    video = it1->int_value;
+                }
+            }
+
+            Instagram *instagram = new Instagram(video, link, name, profile_url, standard_resolution, tags);
+            instagrams.push_back(instagram);
+
+            home.str("");
+            home << getenv("HOME") << "/.uxdemo/instagram/" << link.substr(23);
+            mkdir(home.str().data(), 0777);
+
+            if(profile_url.size() > 0) {
+                home.str("");
+                home << "twitter/" << link.substr(23) << "/profile_url";
+                download_file(profile_url, home.str().data());
+            }
+
+            home.str("");
+            home << getenv("HOME") << "/.uxdemo/instagram/" << link.substr(23);
+            mkdir(home.str().data(), 0777);
+
+            if(standard_resolution.size() > 0) {
+                home.str("");
+                home << "instagram/" << link.substr(23) << "/standard_resolution";
+                download_file(standard_resolution, home.str().data());
+            }
+
+        }
+    }
+
+    
 }
 
 void *do_download(void*) {
