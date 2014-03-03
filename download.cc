@@ -9,6 +9,8 @@
 
 #include <sys/stat.h>
 
+#include "json.h"
+
 struct HttpFile {
     std::string filename;
     FILE *stream;
@@ -68,20 +70,26 @@ void download_file(std::string url, std::string filename) {
     curl_global_cleanup();
 }
 
-// edn::EdnNode \read_edn(std::st\ring filename) {
-//     std::st\ringst\ream ss;
-//
-//     ss << getenv("HOME") << "/.uxdemo/" << filename;
-//
-//     std::ifst\ream in(ss.st\r().data());
-//     std::st\ring s((std::ist\reambuf_ite\rato\r<cha\r>(in)), std::ist\reambuf_ite\rato\r<cha\r>());
-//
-//     std::cout << s << std::endl;
-//
-//     edn::EdnNode data = edn::\read(s);
-//
-//     \retu\rn data;
-// }
+void read_json(std::string filename) {
+    std::stringstream ss;
+
+    ss << getenv("HOME") << "/.uxdemo/" << filename;
+    
+    std::ifstream in(ss.str().data());
+    std::string s((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+
+    char *errorPos = 0;
+    char *errorDesc = 0;
+    int errorLine = 0;
+    block_allocator allocator(1 << 10); // 1 KB per block
+
+    char *c = (char *)malloc(s.size() + 1);
+    strcpy(c, s.data());
+            
+    json_value *root = json_parse(c, &errorPos, (const char **)&errorDesc, &errorLine, &allocator);
+
+
+}
 
 void download_process() {
     std::stringstream home;
@@ -92,11 +100,12 @@ void download_process() {
     mkdir(home.str().data(), 0777);
 
     download_file("http://uxtweet.herokuapp.com/general/background", "background.png");
-    download_file("http://uxtweet.herokuapp.com/api/v1/twitter/list-approved-tweets", "list-approved-tweets.edn");
-    download_file("http://uxtweet.herokuapp.com/api/v1/twitter/list-not-approved-ids", "list-not-approved-tweets.edn");
-    download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-approved-instagrams", "list-approved-instagrams.edn");
-    download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-not-approved-links", "list-not-approved-instagrams.edn");
+    download_file("http://uxtweet.herokuapp.com/api/v1/twitter/list-approved-tweets", "list-approved-tweets.json");
+    download_file("http://uxtweet.herokuapp.com/api/v1/twitter/list-not-approved-ids", "list-not-approved-tweets.json");
+    download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-approved-instagrams", "list-approved-instagrams.json");
+    download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-not-approved-links", "list-not-approved-instagrams.json");
 
+    read_json("list-approved-tweets.json");
 
 }
 
