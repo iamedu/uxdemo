@@ -1,5 +1,5 @@
 uxtest: main.cc util.cc shaders.cc shapes.cc vertex.cc texture.cc 
-	g++ -I/opt/local/include /usr/local/lib/libfreetype.a /opt/local/lib/libSOIL.a /usr/local/lib/libglfw3.a -Iinclude -I/usr/local/include/freetype2 -framework IOKit -framework CoreVideo -framework Cocoa -framework OpenGL main.cc util.cc shaders.cc shapes.cc vertex.cc texture.cc -o uxtest
+	g++ -I/opt/local/include /usr/local/lib/liblua.a /usr/local/lib/libfreetype.a /opt/local/lib/libSOIL.a /usr/local/lib/libglfw3.a -Iinclude -I/usr/local/include/freetype2 -framework IOKit -framework CoreVideo -framework Cocoa -framework OpenGL main.cc util.cc shaders.cc shapes.cc vertex.cc texture.cc -o uxtest
 
 clean: 
 	rm uxtest
