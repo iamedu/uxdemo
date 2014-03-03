@@ -7,11 +7,15 @@
 #include <ux/shaders.h>
 #include <ux/shapes.h>
 #include <ux/texture.h>
+#include <ux/script.h>
+#include <ux/download.h>
 
 #include <fstream>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
+#define TIMEOUT 60
 
 static const GLFWvidmode *mode;
 static ColorShaderProgram *colorProgram;
@@ -26,10 +30,10 @@ static int textureWidth;
 static int textureHeight;
 static int frame = 1;
 static int direction = -1;
-static double lastTime;
 static float backgroundScale = 3.0f;
 static float translation = -5.0f;
 static float alpha = 1.0f;
+static double lastTime;
 static glm::mat4 projection;
 //TEXT
 static FT_Face face;
@@ -108,8 +112,10 @@ void init() {
     glfwSetTime(0);
 }
 
+void draw() {
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-void draw1(float alpha) {
+    glClearColor(alpha, alpha, alpha, 1.0f);
     glm::mat4 scaleBackground = glm::scale( glm::mat4 (1.0f), glm::vec3(1.0f, (float)textureHeight / (float)textureWidth, 1.0f));
     glm::mat4 scale = glm::scale( glm::mat4 (1.0f), glm::vec3(backgroundScale));
     glm::mat4 translate;
@@ -142,7 +148,7 @@ void draw1(float alpha) {
     start_text();
     FT_Set_Pixel_Sizes(face, 0, 32);
     render_text("Celebren con nosotros!! ",
-            -1 + 8 * sx,   1 - 480 * sy,   sx, sy);
+            -1 + 8 * sx,   1 - 520 * sy,   sx, sy);
 
     sx = 2.0 / 768;
     sy = 2.0 / 1024;
@@ -151,139 +157,8 @@ void draw1(float alpha) {
     textProgram->setUniforms(tex, translate, color, alpha);
     FT_Set_Pixel_Sizes(face, 0, 48);
     render_text("#LUNARIO10 ",
-            -1 + 240 * sx,   1 - 540 * sy,   sx, sy);
+            -1 + 240 * sx,   1 - 580 * sy,   sx, sy);
 
-}
-
-void draw2(float alpha) {
-    glm::mat4 scaleBackground = glm::scale( glm::mat4 (1.0f), glm::vec3(1.0f, (float)textureHeight / (float)textureWidth, 1.0f));
-    glm::mat4 scale = glm::scale( glm::mat4 (1.0f), glm::vec3(backgroundScale));
-    glm::mat4 translate;
-    glm::mat4 transformed = projection * scale * scaleBackground;
-
-
-    textureProgram->useProgram();
-    textureProgram->setUniforms(transformed, blackTexture, alpha);
-    textureQuad->bindData(textureProgram);
-    textureQuad->draw();
-
-    scale = glm::scale( glm::mat4 (1.0f), glm::vec3(3.0f, 0.7f, 1.0f));
-    translate = glm::translate( glm::mat4(1.0f), glm::vec3(translation, -0.5f, 0.0f)); 
-    transformed = projection * translate * scale;
-
-    glm::vec4 color = glm::vec4(1.0, 1.0, 1.0, 0.8);
-    colorProgram->useProgram();
-    colorProgram->setUniforms(transformed, color, alpha);
-    colorQuad->bindData(colorProgram);
-    colorQuad->draw();
-
-
-    float sx = 2.0 / 768;
-    float sy = 2.0 / 768;
-    color = glm::vec4(0.0, 0.0, 0.0, 1.0);
-    translate = glm::translate( glm::mat4(1.0f), glm::vec3(0.45f + translation, -0.1f, 0.0f)); 
-    textProgram->useProgram();
-    textProgram->setUniforms(tex, translate, color, alpha);
-
-    start_text();
-    FT_Set_Pixel_Sizes(face, 0, 32);
-    render_text("Celebren con nosotros!! ",
-            -1 + 8 * sx,   1 - 480 * sy,   sx, sy);
-
-    color = glm::vec4(0.93, 0.25, 0.21, 1.0);
-    textProgram->setUniforms(tex, translate, color, alpha);
-    FT_Set_Pixel_Sizes(face, 0, 48);
-    render_text("#LUNARIO10 ",
-            -1 + 240 * sx,   1 - 540 * sy,   sx, sy);
-
-}
-
-void video(float alpha) {
-    glm::mat4 scale;
-    glm::mat4 translate;
-    glm::mat4 transformed;
-    
-    std::stringstream path;
-
-    double currentTime = glfwGetTime();
-
-    if(currentTime - lastTime >= 1.0) {
-        frame += (int)(lastTime - currentTime);
-    }
-
-    lastTime = glfwGetTime();
-
-    char num[4];
-
-    sprintf(num, "%03d", frame);
-
-    path << "videos/f65e6f845a2711e3ba591293cad68979_101/image-" << num << ".jpeg";
-
-    std::ifstream f(path.str().c_str());
-
-    if(!f.good()) {
-        frame = 1;
-        path.str("");
-        path << "videos/f65e6f845a2711e3ba591293cad68979_101/image-001.jpeg";
-        glfwSetTime(0);
-    }
-
-    int w, h;
-    int videoTexture = loadTexture(path.str(), &w, &h);
-
-    scale = glm::scale( glm::mat4 (1.0f), glm::vec3(2.0f, 2.0f, 1.0f));
-    translate = glm::translate( glm::mat4(1.0f), glm::vec3(-0.4, 0.0f, 0.0f)); 
-    transformed = projection * scale * translate;
-
-    textureProgram->useProgram();
-    textureProgram->setUniforms(transformed, videoTexture, alpha);
-    textureQuad->bindData(textureProgram);
-    textureQuad->draw();
-
-    frame += 1;
-
-    glDeleteTextures(1, (const GLuint*)&videoTexture);
-
-    scale = glm::scale( glm::mat4 (1.0f), glm::vec3(2.0f, 3.0f, 1.0f));
-    translate = glm::translate( glm::mat4(1.0f), glm::vec3(1.2f, 0.0f, 0.0f)); 
-    transformed = projection * translate * scale;
-
-    glm::vec4 color = glm::vec4(0.93, 0.25, 0.21, 1.0);
-
-    colorProgram->useProgram();
-    colorProgram->setUniforms(transformed, color, alpha);
-    colorQuad->bindData(colorProgram);
-    colorQuad->draw();
-
-    scale = glm::scale( glm::mat4 (1.0f), glm::vec3(4.0f, 4.0f, 1.0f));
-    translate = glm::translate( glm::mat4(1.0f), glm::vec3(-1.5f, -1.0f, 0.0f)); 
-    transformed = projection * translate * scale;
-    colorProgram->useProgram();
-    colorProgram->setUniforms(transformed, color, 0.3);
-    colorQuad->bindData(colorProgram);
-    colorQuad->draw();
-
-    float sx = 2.0 / mode->width;
-    float sy = 2.0 / mode->height;
-    color = glm::vec4(1.0, 1.0, 1.0, 1.0);
-    translate = glm::translate( glm::mat4(1.0f), glm::vec3(1.2f, 1.0f, 0.0f)); 
-    textProgram->useProgram();
-    textProgram->setUniforms(tex, translate, color, alpha);
-
-    start_text();
-    FT_Set_Pixel_Sizes(face, 0, 32);
-    render_text("Celebren con nosotros!! ",
-            -1 + 8 * sx,   1 - 480 * sy,   sx, sy);
-
-}
-
-void draw() {
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-    glClearColor(alpha, alpha, alpha, 1.0f);
-    //video(alpha);
-    draw1(alpha);
-    //draw2(1 - alpha);
 }
 
 
@@ -382,7 +257,7 @@ int main(int argc, char *argv[]) {
         return -1;
 
     mode = glfwGetVideoMode( glfwGetPrimaryMonitor() );
-    window = glfwCreateWindow(mode->width, mode->height, "UX Demo", glfwGetPrimaryMonitor(), NULL);
+    window = glfwCreateWindow(mode->width, mode->height, "UX Demo", /*glfwGetPrimaryMonitor()*/NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -393,6 +268,7 @@ int main(int argc, char *argv[]) {
     glfwMakeContextCurrent(window);
 
     char temp[1024];
+    double currentTime;
 
     std::ofstream ofs ("/tmp/test.txt", std::ofstream::out);
     ofs << getcwd(temp, 1024) << std::endl;
@@ -401,6 +277,8 @@ int main(int argc, char *argv[]) {
     init();
     resize(mode->width, mode->height);
 
+    lastTime = glfwGetTime();
+    init_download();
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -409,9 +287,15 @@ int main(int argc, char *argv[]) {
         draw();
         animate();
 
+        currentTime = glfwGetTime();
+
+        if((currentTime - lastTime) > TIMEOUT) {
+            download();
+            lastTime = currentTime;
+        }
+
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
-
         /* Poll for and process events */
         glfwPollEvents();
     }
