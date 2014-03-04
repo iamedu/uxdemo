@@ -34,3 +34,5 @@ class Instagram {
 
 static vector<Twitt *> tweets;
 static vector<Instagram *> instagrams;
+
+void load_data();

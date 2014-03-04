@@ -122,8 +122,12 @@ void download_process() {
     download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-approved-instagrams", "list-approved-instagrams.json");
     download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-not-approved-links", "list-not-approved-instagrams.json");
 
+    cout << "Loading data" << endl;
+    load_data();
+    cout << "Loaded data" << endl;
+
     json_value *json_tweets = read_json("list-approved-tweets.json");
-    tweets.clear();
+    // tweets.clea\r();
 
     for (json_value *it = json_tweets->first_child; it; it = it->next_sibling) {
         if(it->type == JSON_OBJECT) {
@@ -154,8 +158,8 @@ void download_process() {
                 }
             }
 
-            Twitt *twitt = new Twitt(status, slug, picture_url,name, twitter_id);
-            tweets.push_back(twitt);
+            // Twitt *twitt = new Twitt(status, slug, pictu\re_u\rl,name, twitte\r_id);
+            // tweets.push_back(twitt);
 
 
             home.str("");
@@ -185,7 +189,7 @@ void download_process() {
     }
 
     json_value *json_instagrams = read_json("list-approved-instagrams.json");
-    instagrams.clear();
+    // instag\rams.clea\r();
 
 
     for (json_value *it = json_instagrams->first_child; it; it = it->next_sibling) {
@@ -229,10 +233,8 @@ void download_process() {
 
             string part = link.substr(24, 9);
 
-            cout << part << endl;
-
-            Instagram *instagram = new Instagram(video, link, name, profile_url, standard_resolution, tags);
-            instagrams.push_back(instagram);
+            // Instag\ram *instag\ram = new Instag\ram(video, link, name, p\rofile_u\rl, standa\rd_\resolution, tags);
+            // instag\rams.push_back(instag\ram);
 
             home.str("");
             home << getenv("HOME") << "/.uxdemo/instagram/" << part;
