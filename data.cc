@@ -1,6 +1,7 @@
 #include <ux/data.h>
 #include <ux/download.h>
 
+#include <iostream>
 #include <sstream>
 #include <fstream>
 #include <sys/stat.h>
@@ -8,12 +9,20 @@
 #include "json.h"
 
 json_value * read_json(std::string filename);
+int file_exists(std::string filename);
 
-void load_data() {
+void load_data(vector<Twitt* > *tweets, vector<Instagram *> *instagrams) {
     std::stringstream home;
 
+    if(!file_exists("list-approved-tweets.json")) {
+        return;
+    }
+
     json_value *json_tweets = read_json("list-approved-tweets.json");
-    tweets.clear();
+    if(!json_tweets) {
+        return;
+    }
+    tweets->clear();
 
     for (json_value *it = json_tweets->first_child; it; it = it->next_sibling) {
         if(it->type == JSON_OBJECT) {
@@ -44,14 +53,22 @@ void load_data() {
                 }
             }
 
+
             Twitt *twitt = new Twitt(status, slug, picture_url,name, twitter_id);
-            tweets.push_back(twitt);
+            tweets->push_back(twitt);
 
         }
     }
 
+    if(!file_exists("list-approved-instagrams.json")) {
+        return;
+    }
+
     json_value *json_instagrams = read_json("list-approved-instagrams.json");
-    instagrams.clear();
+    if(!json_instagrams) {
+        return;
+    }
+    instagrams->clear();
 
 
     for (json_value *it = json_instagrams->first_child; it; it = it->next_sibling) {
@@ -92,11 +109,8 @@ void load_data() {
                 }
             }
 
-
-            string part = link.substr(24, 9);
-
             Instagram *instagram = new Instagram(video, link, name, profile_url, standard_resolution, tags);
-            instagrams.push_back(instagram);
+            instagrams->push_back(instagram);
         }
     }
 }

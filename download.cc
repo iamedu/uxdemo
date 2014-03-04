@@ -61,7 +61,7 @@ void download_file(std::string url, std::string filename) {
         curl_easy_setopt(curl, CURLOPT_URL, url.data());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, my_fwrite);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &httpFile);
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
 
         res = curl_easy_perform(curl);
 
@@ -82,7 +82,7 @@ json_value * read_json(std::string filename) {
     std::stringstream ss;
 
     ss << getenv("HOME") << "/.uxdemo/" << filename;
-    
+
     std::ifstream in(ss.str().data());
     std::string s((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 
@@ -121,10 +121,6 @@ void download_process() {
     download_file("http://uxtweet.herokuapp.com/api/v1/twitter/list-not-approved-ids", "list-not-approved-tweets.json");
     download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-approved-instagrams", "list-approved-instagrams.json");
     download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-not-approved-links", "list-not-approved-instagrams.json");
-
-    cout << "Loading data" << endl;
-    load_data();
-    cout << "Loaded data" << endl;
 
     json_value *json_tweets = read_json("list-approved-tweets.json");
     // tweets.clea\r();
@@ -231,36 +227,38 @@ void download_process() {
             }
 
 
-            string part = link.substr(24, 9);
+            if(link.size() > 0) {
+                string part = link.substr(24, 9);
 
-            // Instag\ram *instag\ram = new Instag\ram(video, link, name, p\rofile_u\rl, standa\rd_\resolution, tags);
-            // instag\rams.push_back(instag\ram);
+                // Instag\ram *instag\ram = new Instag\ram(video, link, name, p\rofile_u\rl, standa\rd_\resolution, tags);
+                // instag\rams.push_back(instag\ram);
 
-            home.str("");
-            home << getenv("HOME") << "/.uxdemo/instagram/" << part;
-            mkdir(home.str().data(), 0777);
-
-            if(profile_url.size() > 0) {
                 home.str("");
-                home << "instagram/" << part << "/profile_url";
-                if(!fexists(profile_url)) {
-                    download_file(profile_url, home.str().data());
-                }
-            }
+                home << getenv("HOME") << "/.uxdemo/instagram/" << part;
+                mkdir(home.str().data(), 0777);
 
-            if(standard_resolution.size() > 0) {
-                home.str("");
-                home << "instagram/" << part << "/standard_resolution";
-                if(!fexists(home.str().data())) {
-                    download_file(standard_resolution, home.str().data());
+                if(profile_url.size() > 0) {
+                    home.str("");
+                    home << "instagram/" << part << "/profile_url";
+                    if(!fexists(profile_url)) {
+                        download_file(profile_url, home.str().data());
+                    }
                 }
-            }
 
+                if(standard_resolution.size() > 0) {
+                    home.str("");
+                    home << "instagram/" << part << "/standard_resolution";
+                    if(!fexists(home.str().data())) {
+                        download_file(standard_resolution, home.str().data());
+                    }
+                }
+
+            }
         }
     }
 
     curl_global_cleanup();
-    
+
 }
 
 void *do_download(void*) {

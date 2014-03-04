@@ -16,7 +16,9 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#define TIMEOUT 60
+#define TIMEOUT 180
+static vector<Twitt *> tweets;
+static vector<Instagram *> instagrams;
 
 static const GLFWvidmode *mode;
 static ColorShaderProgram *colorProgram;
@@ -179,16 +181,35 @@ int file_exists(std::string filename) {
     return infile.good();
 }
 
+static Twitt *twittData = NULL;
 static int currentTweet = 0;
 static int userPicture;
 static int tweetPicture;
 
 void load_tweet() {
+    if(tweets.size() == 0) {
+        load_data(&tweets, &instagrams);
+        return;
+    }
+
     Twitt *t = tweets[currentTweet];
 
     int textureWidth;
     int textureHeight;
-    userPicture = loadTexture(translateFile("437783948081790976/slug"), &textureWidth, &textureHeight);
+    
+    if(t) {
+        stringstream ss;
+        ss << "twitter/" << t->twitter_id << "/slug";
+
+        userPicture = loadTexture(translateFile(ss.str()), &textureWidth, &textureHeight);
+
+        if(t->picture_url.size() > 0) {
+            ss.str("");
+            ss << "twitter/" << t->twitter_id << "/picture_url";
+            tweetPicture = loadTexture(translateFile(ss.str()), &textureWidth, &textureHeight);
+        }
+        twittData = t;
+    }
 
 }
 
@@ -216,6 +237,17 @@ void draw() {
     textureProgram->setUniforms(transformed, backgroundTexture, alpha);
     textureQuad->bindData(textureProgram);
     textureQuad->draw();
+
+    if(twittData == NULL) {
+        load_tweet();
+    } else {
+        scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.3));
+        transformed = projection * scale;
+        textureProgram->useProgram();
+        textureProgram->setUniforms(transformed, userPicture, alpha);
+        textureQuad->bindData(textureProgram);
+        textureQuad->draw();
+    }
 
 }
 
