@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
+#include <cstring>
 
 #include <ux/gl.h>
 #include <ux/util.h>
@@ -229,7 +230,6 @@ void draw() {
 
         start_text();
         FT_Set_Pixel_Sizes(face, 0, 18);
-        std::cout << text_width(twittData->status, sx, sy) << std::endl;
         render_text(twittData->status,
                 -1 + 8 * sx,  1 - 520 * sy,   sx, sy, 40, 30);
     }
@@ -282,6 +282,9 @@ void render_text(std::string s, float x, float y, float sx, float sy, int max_ch
     float startx = x;
     float starty = y;
 
+    glm::vec4 orange = glm::vec4(0.93, 0.25, 0.21, 1.0);
+    glm::vec4 white = glm::vec4(1.0, 1.0, 1.0, 1.0);
+
     FT_GlyphSlot g = face->glyph;
 
     string token;
@@ -290,7 +293,13 @@ void render_text(std::string s, float x, float y, float sx, float sy, int max_ch
         s = s.substr(s.find_first_of(" ") + 1);
         const char *p = token.data();
         int len = utf8::distance(p, p + token.size());
-        cout << token << " " << len << " " << count_chars << " " << max_chars << endl;
+
+        if(strcasecmp(token.data(), "#lunario10") == 0) {
+            token = "#LUNARIO10";
+            textProgram->updateColor(orange);
+        } else {
+            textProgram->updateColor(white);
+        }
 
         count_chars += len + 1;
 

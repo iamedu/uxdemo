@@ -102,6 +102,10 @@ class TextShaderProgram : public ShaderProgram {
             glUniformMatrix4fv( uProjectionMatrixLocation, 1, GL_FALSE, glm::value_ptr( projection ) );
         }
 
+        void updateColor(glm::vec4 color) {
+            glUniform4fv( uColorLocation, 1, glm::value_ptr( color ) );
+        }
+
         GLuint getCoordAttributeLocation() {
             return aCoordLocation;
         }
