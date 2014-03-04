@@ -14,6 +14,7 @@
 #include <fstream>
 
 #include <ft2build.h>
+#include "utf8.h"
 #include FT_FREETYPE_H
 
 #define TIMEOUT 180
@@ -47,8 +48,7 @@ static GLuint tex;
 static GLuint vbo;
 
 void start_text();
-void render_text(const char *text, float x, float y, float sx, float sy);
-
+void render_text(std::string, float, float, float, float);
 void init() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -74,7 +74,7 @@ void init() {
         exit(1);
     }
 
-    if(FT_New_Face(ft, "fonts/Replica-Regular.ttf", 0, &face)) {
+    if(FT_New_Face(ft, "fonts/FuturaStd-Light.ttf", 0, &face)) {
         fprintf(stderr, "Could not open font\n");
         exit(1);
     }
@@ -117,58 +117,6 @@ void init() {
 
     glfwSetTime(0);
 }
-
-/*
-void draw() {
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-    glClearColor(alpha, alpha, alpha, 1.0f);
-    glm::mat4 scaleBackground = glm::scale( glm::mat4 (1.0f), glm::vec3(1.0f, (float)textureHeight / (float)textureWidth, 1.0f));
-    glm::mat4 scale = glm::scale( glm::mat4 (1.0f), glm::vec3(backgroundScale));
-    glm::mat4 translate;
-    glm::mat4 transformed = projection * scale * scaleBackground;
-
-
-    textureProgram->useProgram();
-    textureProgram->setUniforms(transformed, whiteTexture, alpha);
-    textureQuad->bindData(textureProgram);
-    textureQuad->draw();
-
-    scale = glm::scale( glm::mat4 (1.0f), glm::vec3(3.0f, 0.7f, 1.0f));
-    translate = glm::translate( glm::mat4(1.0f), glm::vec3(translation, -0.5f, 0.0f)); 
-    transformed = projection * translate * scale;
-
-    glm::vec4 color = glm::vec4(0.0, 0.0, 0.0, 0.8);
-    colorProgram->useProgram();
-    colorProgram->setUniforms(transformed, color, alpha);
-    colorQuad->bindData(colorProgram);
-    colorQuad->draw();
-
-
-    float sx = 2.0 / 768;
-    float sy = 2.0 / 768;
-    color = glm::vec4(1.0, 1.0, 1.0, 1.0);
-    translate = glm::translate( glm::mat4(2.0f), glm::vec3(0.45f + translation, -0.1f, 0.0f)); 
-    textProgram->useProgram();
-    textProgram->setUniforms(tex, translate, color, alpha);
-
-    start_text();
-    FT_Set_Pixel_Sizes(face, 0, 32);
-    render_text("Celebren con nosotros!! ",
-            -1 + 8 * sx,   1 - 520 * sy,   sx, sy);
-
-    sx = 2.0 / 768;
-    sy = 2.0 / 1024;
-
-    color = glm::vec4(1.0, 1.0, 1.0, 1.0);
-    textProgram->setUniforms(tex, translate, color, alpha);
-    FT_Set_Pixel_Sizes(face, 0, 48);
-    render_text("#LUNARIO10 ",
-            -1 + 240 * sx,   1 - 580 * sy,   sx, sy);
-
-}
-*/
-
 
 std::string translateFile(std::string filename) {
     std::stringstream home;
@@ -243,6 +191,8 @@ void draw() {
     if(twittData == NULL) {
         load_tweet();
     } else {
+        std::cout << twittData->status << std::endl;
+
         //User
         scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.3));
         translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -2.5f, 0.0f));
@@ -269,6 +219,19 @@ void draw() {
         textureProgram->setUniforms(transformed, twitterTexture, 1.0);
         textureQuad->bindData(textureProgram);
         textureQuad->draw();
+
+
+        float sx = 2.0 / 768;
+        float sy = 2.0 / 768;
+        glm::vec4 color = glm::vec4(1.0, 1.0, 1.0, 1.0);
+        translate = glm::translate( glm::mat4(2.0f), glm::vec3(0.45f, -0.1f, 0.0f)); 
+        textProgram->useProgram();
+        textProgram->setUniforms(tex, translate, color, alpha);
+
+        start_text();
+        FT_Set_Pixel_Sizes(face, 0, 24);
+        render_text(twittData->status,
+                -1 + 8 * sx,  1 - 520 * sy,   sx, sy);
     }
 
 }
@@ -280,13 +243,16 @@ void start_text() {
     glVertexAttribPointer(textProgram->getCoordAttributeLocation(), 4, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
-void render_text(const char *text, float x, float y, float sx, float sy) {
-    const char *p;
+void render_text(std::string s, float x, float y, float sx, float sy) {
+    const char *p = s.data();
+    int len = s.size();
 
     FT_GlyphSlot g = face->glyph;
 
-    for(p = text; *p; p++) {
-        if(FT_Load_Char(face, *p, FT_LOAD_RENDER))
+    for(int i = 0; i < len; i++) {
+        int cp = utf8::next(p, p + (len - i));
+
+        if(FT_Load_Char(face, cp, FT_LOAD_RENDER))
             continue;
 
         glTexImage2D(
@@ -330,34 +296,6 @@ void resize(int w, int h) {
 }
 
 void animate() {
-//     backg\roundScale += 0.0008f;
-//
-//     if(t\ranslation < -0.5f) {
-//         t\ranslation += 0.1f;
-//     }
-
-    // if(direction == -1) {
-    //     if(alpha > 0.0f) {
-    //         alpha -= 0.001f;
-    //         if(alpha <= 0.0f) {
-    //             alpha = 0.0f;
-    //             direction = 1;
-    //         }
-    //     } else {
-    //         direction = 1;
-    //     }
-    // } else {
-    //     if(alpha < 1.0f) {
-    //         alpha += 0.001f;
-    //         if(alpha >= 1.0f) {
-    //             alpha = 1.0f;
-    //             direction = -1;
-    //         }
-    //     } else {
-    //         direction = -1;
-    //     }
-    // }
-
 }
 
 
