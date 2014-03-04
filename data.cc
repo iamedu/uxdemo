@@ -80,9 +80,22 @@ void load_data(vector<Twitt* > *tweets, vector<Instagram *> *instagrams) {
             std::string standard_resolution;
             std::string tags = "";
 
+            std::stringstream ts;
+
             for (json_value *it1 = it->first_child; it1; it1 = it1->next_sibling) {
                 if(it1->type == JSON_NULL) {
                     continue;
+                }
+                if(strcmp(it1->name, "instagram_tags") == 0) {
+                    for (json_value *it2 = it1->first_child; it2; it2 = it2->next_sibling) {
+                        for (json_value *it3 = it2->first_child; it3; it3 = it3->next_sibling) {
+                            if(it3->type == JSON_NULL) {
+                                continue;
+                            }
+                            ts << "#" << it3->string_value << " ";
+                            tags = ts.str();
+                        }
+                    }
                 }
                 if(strcmp(it1->name, "link") == 0) {
                     char *s = (char *)malloc(strlen(it1->string_value) + 1);

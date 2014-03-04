@@ -296,6 +296,9 @@ void draw() {
 
         start_text();
         FT_Set_Pixel_Sizes(face, 0, 18);
+        render_text(instagramData->tags,
+                -1 + 8 * sx,  1 - 520 * sy,   sx, sy, 40, 30);
+
         color = glm::vec4(1.0, 1.0, 1.0, 1.0);
         translate = glm::translate( glm::mat4(2.0f), glm::vec3(w * 0.75, -0.4f, 0.0f)); 
         textProgram->useProgram();
@@ -635,7 +638,7 @@ int main(int argc, char *argv[]) {
     resize(mode->width, mode->height);
 
     lastTime = glfwGetTime();
-    init_download();
+    //init_download();
 
     stage =0;
     counter = 0.0f;
@@ -660,7 +663,7 @@ int main(int argc, char *argv[]) {
         currentTime = glfwGetTime();
 
         if((currentTime - lastTime) > TIMEOUT) {
-            download();
+            //download();
             lastTime = currentTime;
         }
 
