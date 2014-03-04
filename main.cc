@@ -150,7 +150,7 @@ void load_tweet() {
     int textureHeight;
 
     if(t) {
-        stringstream ss;
+        std::stringstream ss;
         ss << "twitter/" << t->twitter_id << "/slug";
 
         userPicture = loadTexture(translateFile(ss.str()), &textureWidth, &textureHeight);
@@ -193,9 +193,22 @@ void draw() {
     if(twittData == NULL) {
         load_tweet();
     } else {
+        float down = 0.0f;
+        if(twittData->picture_url.size() > 0) {
+            down = 0.15f;
+            scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.8));
+            translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.32, 0.25f, 0.0f));
+            transformed = projection * scale * translate;
+            textureProgram->useProgram();
+            textureProgram->setUniforms(transformed, tweetPicture, alpha);
+            textureQuad->bindData(textureProgram);
+            textureQuad->draw();
+        }
+
+
         //User
         scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.3));
-        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -2.5f, 0.0f));
+        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -2.6f, 0.0f));
         transformed = projection * scale * translate;
         textureProgram->useProgram();
         textureProgram->setUniforms(transformed, userPicture, alpha);
@@ -205,7 +218,7 @@ void draw() {
         //Box
         textureProgram->useProgram();
         scale = glm::scale( glm::mat4 (1.0f), glm::vec3(1.5f, 0.5f, 0.3f));
-        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -0.52f, 0.0f));
+        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -0.52f - down * 2.0, 0.0f));
         transformed = projection * scale * translate;
         textureProgram->setUniforms(transformed, whiteBoxTexture, 0.2);
         textureQuad->bindData(textureProgram);
@@ -213,8 +226,13 @@ void draw() {
 
         //Twitter
         textureProgram->useProgram();
-        scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.20f, 0.16f, 0.16f));
-        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.8, 2.4f, 0.0f));
+        if(down > 0) {
+            scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.10f, 0.08f, 0.08f));
+            translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 5.6, 2.4f, 0.0f));
+        } else {
+            scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.20f, 0.16f, 0.16f));
+            translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.8, 2.4f, 0.0f));
+        }
         transformed = projection * scale * translate;
         textureProgram->setUniforms(transformed, twitterTexture, 1.0);
         textureQuad->bindData(textureProgram);
@@ -224,7 +242,7 @@ void draw() {
         float sx = 2.0 / 768;
         float sy = 2.0 / 768;
         glm::vec4 color = glm::vec4(1.0, 1.0, 1.0, 1.0);
-        translate = glm::translate( glm::mat4(2.0f), glm::vec3(w * 0.64, 0.2f, 0.0f)); 
+        translate = glm::translate( glm::mat4(2.0f), glm::vec3(w * 0.64, 0.2f - down, 0.0f)); 
         textProgram->useProgram();
         textProgram->setUniforms(tex, translate, color, alpha);
 
@@ -232,6 +250,33 @@ void draw() {
         FT_Set_Pixel_Sizes(face, 0, 18);
         render_text(twittData->status,
                 -1 + 8 * sx,  1 - 520 * sy,   sx, sy, 40, 30);
+
+        color = glm::vec4(1.0, 1.0, 1.0, 1.0);
+        translate = glm::translate( glm::mat4(2.0f), glm::vec3(w * 0.75, -0.4f, 0.0f)); 
+        textProgram->useProgram();
+        textProgram->setUniforms(tex, translate, color, alpha);
+        std::stringstream ss;
+        ss << "@" << twittData->slug;
+
+        FT_Set_Pixel_Sizes(face, 0, 20);
+        render_text(ss.str(),
+                -1 + 8 * sx,  1 - 520 * sy,   sx, sy, 0, 0);
+
+        color = glm::vec4(1.0, 1.0, 1.0, 1.0);
+        if(down > 0) {
+            scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.8f));
+            translate = glm::translate( glm::mat4(2.0f), glm::vec3(w * 1.1, 0.45f, 0.0f)); 
+            transformed = projection * translate * scale;
+        } else {
+            translate = glm::translate( glm::mat4(2.0f), glm::vec3(w * 0.76, 0.74f, 0.0f)); 
+            transformed = translate;
+        }
+        textProgram->useProgram();
+        textProgram->setUniforms(tex, transformed, color, alpha);
+
+        FT_Set_Pixel_Sizes(face, 0, 32);
+        render_text("@LunarioMx",
+                -1 + 8 * sx,  1 - 520 * sy,   sx, sy, 0, 0);
     }
 
 }
@@ -251,7 +296,13 @@ float text_width(std::string s, float sx, float sy) {
     FT_GlyphSlot g = face->glyph;
 
     for(int i = 0; i < len; i++) {
-        int cp = utf8::next(p, p + (len - i));
+        int cp;
+        try {
+            cp = utf8::next(p, p + (len - i));
+        } catch(const utf8::exception& utfcpp_ex) { 
+            std::cerr << utfcpp_ex.what();
+            cp = ' ';
+        }
 
         if(FT_Load_Char(face, cp, FT_LOAD_RENDER))
             continue;
@@ -289,7 +340,8 @@ void render_text(std::string s, float x, float y, float sx, float sy, int max_ch
 
     string token;
     while(token != s){
-        token = s.substr(0,s.find_first_of(" "));
+        int found = s.find_first_of(" ");
+        token = s.substr(0, s.find_first_of(" "));
         s = s.substr(s.find_first_of(" ") + 1);
         const char *p = token.data();
         int len = utf8::distance(p, p + token.size());
@@ -310,7 +362,13 @@ void render_text(std::string s, float x, float y, float sx, float sy, int max_ch
         }
 
         for(int i = 0; i < len; i++) {
-            int cp = utf8::next(p, p + (len - i));
+            int cp;
+            try {
+                cp = utf8::next(p, p + (len - i));
+            } catch(const utf8::exception& utfcpp_ex) { 
+                std::cerr << utfcpp_ex.what();
+                cp = ' ';
+            }
 
             if(FT_Load_Char(face, cp, FT_LOAD_RENDER))
                 continue;
@@ -379,6 +437,10 @@ void render_text(std::string s, float x, float y, float sx, float sy, int max_ch
 
         x += (g->advance.x >> 6) * sx;
         y += (g->advance.y >> 6) * sy;
+
+        if(found == -1) {
+            break;
+        }
     }
 
 }
@@ -403,7 +465,7 @@ int main(int argc, char *argv[]) {
         return -1;
 
     mode = glfwGetVideoMode( glfwGetPrimaryMonitor() );
-    window = glfwCreateWindow(mode->width, mode->height, "UX Demo", glfwGetPrimaryMonitor(), NULL);
+    window = glfwCreateWindow(mode->width, mode->height, "UX Demo", /*glfwGetPrimaryMonitor()*/NULL, NULL);
     if (!window)
     {
         glfwTerminate();
