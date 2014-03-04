@@ -140,6 +140,11 @@ static int currentTweet = 0;
 static int userPicture;
 static int tweetPicture;
 
+static Instagram *instagramData = NULL;
+static int currentInstagram = 0;
+static int instagramPicture;
+
+
 void load_tweet() {
     if(tweets.size() == 0) {
         load_data(&tweets, &instagrams);
@@ -166,13 +171,11 @@ void load_tweet() {
             tweetPicture = loadTexture(translateFile(ss.str()), &textureWidth, &textureHeight);
         }
         twittData = t;
+        instagramData = NULL;
     }
 
-}
 
-static Instagram *instagramData = NULL;
-static int currentInstagram = 0;
-static int instagramPicture;
+}
 
 void load_instagram() {
     if(instagrams.size() == 0) {
@@ -180,10 +183,21 @@ void load_instagram() {
         return;
     }
 
-    Instagram *t = instagrams[currentInstagram];
+    if(currentInstagram >= instagrams.size()) {
+        currentInstagram = 0;
+    }
 
-    while(t && t->video) {
+    Instagram *t = instagrams[currentInstagram++];
+    cout << "Selecting this " << instagrams.size() << endl;
+
+    while(t && t->video && currentInstagram <= instagrams.size()) {
+        cout << "Selecting this " << t->video << endl;
         t = instagrams[++currentInstagram];
+    }
+
+
+    if(currentInstagram > currentInstagram) {
+        t = NULL;
     }
 
     int textureWidth;
@@ -201,6 +215,7 @@ void load_instagram() {
         instagramPicture = loadTexture(translateFile(ss.str()), &textureWidth, &textureHeight);
 
         instagramData = t;
+        twittData = NULL;
     }
 
 }
@@ -266,8 +281,8 @@ void draw() {
         scale = glm::scale( glm::mat4 (1.0f), glm::vec3(1.5f, 0.5f, 0.3f));
         translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -0.52f - down * 2.0, 0.0f));
         transformed = projection * scale * translate;
-        float transparentAlpha = 0.2;
-        if(alpha < transparentAlpha) transparentAlpha = alpha;
+        float transparentAlpha = 0.2 * alpha;
+        //if(alpha < transparentAlpha) transparentAlpha = alpha;
         textureProgram->setUniforms(transformed, whiteBoxTexture, transparentAlpha);
         textureQuad->bindData(textureProgram);
         textureQuad->draw();
@@ -295,9 +310,7 @@ void draw() {
 
     }
     
-    if(twittData == NULL) {
-        load_tweet();
-    } else {
+    if(twittData != NULL) {
         float down = 0.0f;
         if(twittData->picture_url.size() > 0) {
             down = 0.15f;
@@ -325,8 +338,8 @@ void draw() {
         scale = glm::scale( glm::mat4 (1.0f), glm::vec3(1.5f, 0.5f, 0.3f));
         translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -0.52f - down * 2.0, 0.0f));
         transformed = projection * scale * translate;
-        float transparentAlpha = 0.2f;
-        if(alpha < transparentAlpha) transparentAlpha = alpha;
+        float transparentAlpha = 0.2f * alpha;
+        //if(alpha < transparentAlpha) transparentAlpha = alpha;
         textureProgram->setUniforms(transformed, whiteBoxTexture, transparentAlpha);
         textureQuad->bindData(textureProgram);
         textureQuad->draw();
@@ -473,7 +486,7 @@ void render_text(std::string s, float x, float y, float sx, float sy, int max_ch
             try {
                 cp = utf8::next(p, p + (len - i));
             } catch(const utf8::exception& utfcpp_ex) { 
-                std::cerr << utfcpp_ex.what();
+                std::cerr << utfcpp_ex.what() << endl;
                 cp = ' ';
             }
 
@@ -578,7 +591,12 @@ void animate() {
         if(alpha <= 0) {
             alpha = 0.0f;
             stage = 2;
-            load_tweet();
+            int r = random() % 10;
+            if(r < 5) {
+                load_tweet();
+            } else {
+                load_instagram();
+            }
         }
     } else if(stage == 2) {
         alpha += 0.01f;
@@ -617,11 +635,13 @@ int main(int argc, char *argv[]) {
     resize(mode->width, mode->height);
 
     lastTime = glfwGetTime();
-    init_download();
+    //init_download();
 
     stage =0;
     counter = 0.0f;
     startTime = 0.0f;
+
+    //load_tweet();
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -629,6 +649,7 @@ int main(int argc, char *argv[]) {
         /* Render here */
         draw();
         animate();
+
 
         currentTime = glfwGetTime();
 
