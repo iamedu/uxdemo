@@ -43,7 +43,6 @@ void download_file(std::string url, std::string filename) {
 
     CURLcode res;
 
-    curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
 
     std::stringstream ss;
@@ -77,7 +76,6 @@ void download_file(std::string url, std::string filename) {
         }
 
     }
-    curl_global_cleanup();
 }
 
 json_value * read_json(std::string filename) {
@@ -91,7 +89,7 @@ json_value * read_json(std::string filename) {
     char *errorPos = 0;
     char *errorDesc = 0;
     int errorLine = 0;
-    block_allocator allocator(1 << 20); // 1 KB per block
+    block_allocator allocator(1 << 16); // 1 KB per block
 
     char * data = (char *)s.data();
 
@@ -116,23 +114,17 @@ void download_process() {
     home << getenv("HOME");
     home << "/.uxdemo/instagram";
     mkdir(home.str().data(), 0777);
+    curl_global_init(CURL_GLOBAL_DEFAULT);
 
-//     json_value *invalid_tweets = \read_json("list-not-app\roved-tweets.json");
-//
-//     json_value *invalid_instag\rams = \read_json("list-not-app\roved-instag\rams.json");
-
-    /*
     download_file("http://uxtweet.herokuapp.com/general/background", "background");
     download_file("http://uxtweet.herokuapp.com/api/v1/twitter/list-approved-tweets", "list-approved-tweets.json");
     download_file("http://uxtweet.herokuapp.com/api/v1/twitter/list-not-approved-ids", "list-not-approved-tweets.json");
     download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-approved-instagrams", "list-approved-instagrams.json");
     download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-not-approved-links", "list-not-approved-instagrams.json");
-    */
 
     json_value *json_tweets = read_json("list-approved-tweets.json");
     tweets.clear();
 
-    /*
     for (json_value *it = json_tweets->first_child; it; it = it->next_sibling) {
         if(it->type == JSON_OBJECT) {
             std::string status;
@@ -191,7 +183,6 @@ void download_process() {
 
         }
     }
-    */
 
     json_value *json_instagrams = read_json("list-approved-instagrams.json");
     instagrams.clear();
@@ -207,28 +198,27 @@ void download_process() {
             std::string tags = "";
 
             for (json_value *it1 = it->first_child; it1; it1 = it1->next_sibling) {
-                std::cout << it1->name << std::endl;
                 if(it1->type == JSON_NULL) {
                     continue;
                 }
                 if(strcmp(it1->name, "link") == 0) {
                     char *s = (char *)malloc(strlen(it1->string_value) + 1);
-                    strcpy(s, it1->name);
+                    strcpy(s, it1->string_value);
                     link = s;
                 }
                 if(strcmp(it1->name, "name") == 0) {
                     char *s = (char *)malloc(strlen(it1->string_value) + 1);
-                    strcpy(s, it1->name);
+                    strcpy(s, it1->string_value);
                     name = s;
                 }
                 if(strcmp(it1->name, "profile_url") == 0) {
                     char *s = (char *)malloc(strlen(it1->string_value) + 1);
-                    strcpy(s, it1->name);
+                    strcpy(s, it1->string_value);
                     profile_url = s;
                 }
                 if(strcmp(it1->name, "standard_resolution") == 0) {
                     char *s = (char *)malloc(strlen(it1->string_value) + 1);
-                    strcpy(s, it1->name);
+                    strcpy(s, it1->string_value);
                     standard_resolution = s;
                 }
                 if(strcmp(it1->name, "video") == 0) {
@@ -237,35 +227,37 @@ void download_process() {
             }
 
 
-            std::cout << link.size() << std::endl;
-            if(link.size() >= 24) {
-                Instagram *instagram = new Instagram(video, link, name, profile_url, standard_resolution, tags);
-                instagrams.push_back(instagram);
+            string part = link.substr(24, 9);
 
+            cout << part << endl;
+
+            Instagram *instagram = new Instagram(video, link, name, profile_url, standard_resolution, tags);
+            instagrams.push_back(instagram);
+
+            home.str("");
+            home << getenv("HOME") << "/.uxdemo/instagram/" << part;
+            mkdir(home.str().data(), 0777);
+
+            if(profile_url.size() > 0) {
                 home.str("");
-                home << getenv("HOME") << "/.uxdemo/instagram/" << link.substr(24, 9);
-                mkdir(home.str().data(), 0777);
-
-                if(profile_url.size() > 0) {
-                    home.str("");
-                    home << "instagram/" << link.substr(24, 9) << "/profile_url";
-                    if(!fexists(profile_url)) {
-                        download_file(profile_url, home.str().data());
-                    }
+                home << "instagram/" << part << "/profile_url";
+                if(!fexists(profile_url)) {
+                    download_file(profile_url, home.str().data());
                 }
+            }
 
-                if(standard_resolution.size() > 0) {
-                    home.str("");
-                    home << "instagram/" << link.substr(24, 9) << "/standard_resolution";
-                    if(!fexists(home.str().data())) {
-                        download_file(standard_resolution, home.str().data());
-                    }
+            if(standard_resolution.size() > 0) {
+                home.str("");
+                home << "instagram/" << part << "/standard_resolution";
+                if(!fexists(home.str().data())) {
+                    download_file(standard_resolution, home.str().data());
                 }
             }
 
         }
     }
 
+    curl_global_cleanup();
     
 }
 
