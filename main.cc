@@ -31,6 +31,7 @@ static TextureQuad *textureQuad;
 static int textureCache[100];
 static int whiteTexture;
 static int twitterTexture;
+static int instagramTexture;
 static int whiteBoxTexture;
 static int blackTexture;
 static int backgroundTexture = -1;
@@ -107,6 +108,7 @@ void init() {
 
     whiteBoxTexture = loadTexture("textures/white-box.png", &textureWidth, &textureHeight);
     twitterTexture = loadTexture("textures/twitter.png", &textureWidth, &textureHeight);
+    instagramTexture = loadTexture("textures/instagram.png", &textureWidth, &textureHeight);
 
     glEnable( GL_LINE_SMOOTH );
     glEnable( GL_POLYGON_SMOOTH );
@@ -165,6 +167,42 @@ void load_tweet() {
 
 }
 
+static Instagram *instagramData = NULL;
+static int currentInstagram = 0;
+static int instagramPicture;
+
+void load_instagram() {
+    if(instagrams.size() == 0) {
+        load_data(&tweets, &instagrams);
+        return;
+    }
+
+    Instagram *t = instagrams[currentInstagram];
+
+    while(t && t->video) {
+        t = instagrams[++currentInstagram];
+    }
+
+    int textureWidth;
+    int textureHeight;
+
+    if(t) {
+        std::stringstream ss;
+        string part = t->link.substr(24, 9);
+        ss << "instagram/" << part << "/profile_url";
+
+        userPicture = loadTexture(translateFile(ss.str()), &textureWidth, &textureHeight);
+
+        ss.str("");
+        ss << "instagram/" << part << "/standard_resolution";
+        instagramPicture = loadTexture(translateFile(ss.str()), &textureWidth, &textureHeight);
+
+        instagramData = t;
+    }
+
+}
+
+
 void draw() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glClearColor(alpha, alpha, alpha, 1.0f);
@@ -190,7 +228,67 @@ void draw() {
     textureQuad->bindData(textureProgram);
     textureQuad->draw();
 
-    if(twittData == NULL) {
+    load_instagram();
+    if(instagramData != NULL) {
+        float down = 0.0f;
+        down = 0.15f;
+        scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.5, 0.125, 0.0));
+        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.4, 2.2f, 0.0f));
+        transformed = projection * scale * translate;
+        textureProgram->useProgram();
+        textureProgram->setUniforms(transformed, instagramTexture, alpha);
+        textureQuad->bindData(textureProgram);
+        textureQuad->draw();
+
+        scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.8));
+        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.80, 0.25f, 0.0f));
+        transformed = projection * scale * translate;
+        textureProgram->useProgram();
+        textureProgram->setUniforms(transformed, instagramPicture, alpha);
+        textureQuad->bindData(textureProgram);
+        textureQuad->draw();
+
+
+        //User
+        scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.3));
+        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -2.6f, 0.0f));
+        transformed = projection * scale * translate;
+        textureProgram->useProgram();
+        textureProgram->setUniforms(transformed, userPicture, alpha);
+        textureQuad->bindData(textureProgram);
+        textureQuad->draw();
+
+        //Box
+        textureProgram->useProgram();
+        scale = glm::scale( glm::mat4 (1.0f), glm::vec3(1.5f, 0.5f, 0.3f));
+        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -0.52f - down * 2.0, 0.0f));
+        transformed = projection * scale * translate;
+        textureProgram->setUniforms(transformed, whiteBoxTexture, 0.2);
+        textureQuad->bindData(textureProgram);
+        textureQuad->draw();
+
+        float sx = 2.0 / 768;
+        float sy = 2.0 / 768;
+        glm::vec4 color = glm::vec4(1.0, 1.0, 1.0, 1.0);
+        translate = glm::translate( glm::mat4(2.0f), glm::vec3(w * 0.64, 0.2f - down, 0.0f)); 
+        textProgram->useProgram();
+        textProgram->setUniforms(tex, translate, color, alpha);
+
+        start_text();
+        FT_Set_Pixel_Sizes(face, 0, 18);
+        color = glm::vec4(1.0, 1.0, 1.0, 1.0);
+        translate = glm::translate( glm::mat4(2.0f), glm::vec3(w * 0.75, -0.4f, 0.0f)); 
+        textProgram->useProgram();
+        textProgram->setUniforms(tex, translate, color, alpha);
+
+        std::stringstream ss;
+        ss << "@" << instagramData->name;
+
+        FT_Set_Pixel_Sizes(face, 0, 20);
+        render_text(ss.str(),
+                -1 + 8 * sx,  1 - 520 * sy,   sx, sy, 0, 0);
+
+    } else if(twittData == NULL) {
         load_tweet();
     } else {
         float down = 0.0f;

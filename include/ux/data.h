@@ -28,7 +28,7 @@ class Instagram {
         string tags;
         
         Instagram(int video, string link, string name, string profile_url, string standard_resolution, string tags) :
-            video(video), name(name), profile_url(profile_url), standard_resolution(standard_resolution), tags(tags) {
+            video(video), name(name), profile_url(profile_url), standard_resolution(standard_resolution), tags(tags), link(link) {
         }
 };
 
