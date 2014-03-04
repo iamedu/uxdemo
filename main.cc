@@ -621,7 +621,7 @@ int main(int argc, char *argv[]) {
         return -1;
 
     mode = glfwGetVideoMode( glfwGetPrimaryMonitor() );
-    window = glfwCreateWindow(mode->width, mode->height, "UX Demo", /*glfwGetPrimaryMonitor()*/NULL, NULL);
+    window = glfwCreateWindow(mode->width, mode->height, "UX Demo", glfwGetPrimaryMonitor(), NULL);
     if (!window)
     {
         glfwTerminate();
