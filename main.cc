@@ -131,7 +131,9 @@ std::string translateFile(std::string filename) {
 }
 
 int file_exists(std::string filename) {
-    std::ifstream infile(translateFile(filename).data());
+    std::string s = translateFile(filename).data();
+    //cout << "Preguntando por " << s << endl;
+    std::ifstream infile(s.data());
     return infile.good();
 }
 
@@ -188,10 +190,8 @@ void load_instagram() {
     }
 
     Instagram *t = instagrams[currentInstagram++];
-    cout << "Selecting this " << instagrams.size() << endl;
 
     while(t && t->video && currentInstagram <= instagrams.size()) {
-        cout << "Selecting this " << t->video << endl;
         t = instagrams[++currentInstagram];
     }
 
@@ -592,7 +592,7 @@ void animate() {
             alpha = 0.0f;
             stage = 2;
             int r = random() % 10;
-            if(r < 5) {
+            if(r < 6) {
                 load_tweet();
             } else {
                 load_instagram();
@@ -635,13 +635,19 @@ int main(int argc, char *argv[]) {
     resize(mode->width, mode->height);
 
     lastTime = glfwGetTime();
-    //init_download();
+    init_download();
 
     stage =0;
     counter = 0.0f;
     startTime = 0.0f;
 
     //load_tweet();
+    int r = random() % 10;
+    if(r < 6) {
+        load_tweet();
+    } else {
+        load_instagram();
+    }
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -654,7 +660,7 @@ int main(int argc, char *argv[]) {
         currentTime = glfwGetTime();
 
         if((currentTime - lastTime) > TIMEOUT) {
-            //download();
+            download();
             lastTime = currentTime;
         }
 

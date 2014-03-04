@@ -21,10 +21,7 @@ struct HttpFile {
 pthread_t download_thread;
 pthread_mutex_t downloadMutex; 
 
-int fexists(std::string filename) {
-    std::ifstream infile(filename.data());
-    return infile.good();
-}
+int file_exists(std::string filename);
 
 static size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
 {
@@ -168,7 +165,7 @@ void download_process() {
                 picture << slug;
                 home.str("");
                 home << "twitter/" << twitter_id << "/slug";
-                if(!fexists(picture.str().data())) {
+                if(!file_exists(picture.str().data())) {
                     download_file(picture.str().data(), home.str().data());
                 }
             }
@@ -176,7 +173,7 @@ void download_process() {
             if(picture_url.size() > 0) {
                 home.str("");
                 home << "twitter/" << twitter_id << "/picture_url";
-                if(!fexists(picture_url)) {
+                if(!file_exists(picture_url)) {
                     download_file(picture_url, home.str().data());
                 }
             }
@@ -240,7 +237,7 @@ void download_process() {
                 if(profile_url.size() > 0) {
                     home.str("");
                     home << "instagram/" << part << "/profile_url";
-                    if(!fexists(profile_url)) {
+                    if(!file_exists(profile_url)) {
                         download_file(profile_url, home.str().data());
                     }
                 }
@@ -248,7 +245,7 @@ void download_process() {
                 if(standard_resolution.size() > 0) {
                     home.str("");
                     home << "instagram/" << part << "/standard_resolution";
-                    if(!fexists(home.str().data())) {
+                    if(!file_exists(home.str().data())) {
                         download_file(standard_resolution, home.str().data());
                     }
                 }
