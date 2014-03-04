@@ -28,6 +28,8 @@ static ColorQuad *colorQuad;
 static TextureQuad *textureQuad;
 static int textureCache[100];
 static int whiteTexture;
+static int twitterTexture;
+static int whiteBoxTexture;
 static int blackTexture;
 static int backgroundTexture = -1;
 static int textureWidth;
@@ -101,8 +103,8 @@ void init() {
      *
      */
 
-    whiteTexture = loadTexture("textures/lunario10_whitebg01.png", &textureWidth, &textureHeight);
-    blackTexture = loadTexture("textures/lunario10_blackbg01.png", &textureWidth, &textureHeight);
+    whiteBoxTexture = loadTexture("textures/white-box.png", &textureWidth, &textureHeight);
+    twitterTexture = loadTexture("textures/twitter.png", &textureWidth, &textureHeight);
 
     glEnable( GL_LINE_SMOOTH );
     glEnable( GL_POLYGON_SMOOTH );
@@ -241,10 +243,30 @@ void draw() {
     if(twittData == NULL) {
         load_tweet();
     } else {
+        //User
         scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.3));
-        transformed = projection * scale;
+        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -2.5f, 0.0f));
+        transformed = projection * scale * translate;
         textureProgram->useProgram();
         textureProgram->setUniforms(transformed, userPicture, alpha);
+        textureQuad->bindData(textureProgram);
+        textureQuad->draw();
+
+        //Box
+        textureProgram->useProgram();
+        scale = glm::scale( glm::mat4 (1.0f), glm::vec3(1.5f, 0.4f, 0.3f));
+        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -0.6f, 0.0f));
+        transformed = projection * scale * translate;
+        textureProgram->setUniforms(transformed, whiteBoxTexture, 0.2);
+        textureQuad->bindData(textureProgram);
+        textureQuad->draw();
+
+        //Twitter
+        textureProgram->useProgram();
+        scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.20f, 0.16f, 0.16f));
+        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.8, 2.4f, 0.0f));
+        transformed = projection * scale * translate;
+        textureProgram->setUniforms(transformed, twitterTexture, 1.0);
         textureQuad->bindData(textureProgram);
         textureQuad->draw();
     }
@@ -347,7 +369,7 @@ int main(int argc, char *argv[]) {
         return -1;
 
     mode = glfwGetVideoMode( glfwGetPrimaryMonitor() );
-    window = glfwCreateWindow(mode->width, mode->height, "UX Demo", /*glfwGetPrimaryMonitor()*/NULL, NULL);
+    window = glfwCreateWindow(mode->width, mode->height, "UX Demo", glfwGetPrimaryMonitor(), NULL);
     if (!window)
     {
         glfwTerminate();
