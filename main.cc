@@ -48,7 +48,8 @@ static GLuint tex;
 static GLuint vbo;
 
 void start_text();
-void render_text(std::string, float, float, float, float);
+float text_width(std::string s, float sx, float sy);
+void render_text(std::string, float, float, float, float, int, int);
 void init() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -146,7 +147,7 @@ void load_tweet() {
 
     int textureWidth;
     int textureHeight;
-    
+
     if(t) {
         stringstream ss;
         ss << "twitter/" << t->twitter_id << "/slug";
@@ -191,8 +192,6 @@ void draw() {
     if(twittData == NULL) {
         load_tweet();
     } else {
-        std::cout << twittData->status << std::endl;
-
         //User
         scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.3));
         translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -2.5f, 0.0f));
@@ -204,8 +203,8 @@ void draw() {
 
         //Box
         textureProgram->useProgram();
-        scale = glm::scale( glm::mat4 (1.0f), glm::vec3(1.5f, 0.4f, 0.3f));
-        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -0.6f, 0.0f));
+        scale = glm::scale( glm::mat4 (1.0f), glm::vec3(1.5f, 0.5f, 0.3f));
+        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -0.52f, 0.0f));
         transformed = projection * scale * translate;
         textureProgram->setUniforms(transformed, whiteBoxTexture, 0.2);
         textureQuad->bindData(textureProgram);
@@ -224,14 +223,15 @@ void draw() {
         float sx = 2.0 / 768;
         float sy = 2.0 / 768;
         glm::vec4 color = glm::vec4(1.0, 1.0, 1.0, 1.0);
-        translate = glm::translate( glm::mat4(2.0f), glm::vec3(0.45f, -0.1f, 0.0f)); 
+        translate = glm::translate( glm::mat4(2.0f), glm::vec3(w * 0.64, 0.2f, 0.0f)); 
         textProgram->useProgram();
         textProgram->setUniforms(tex, translate, color, alpha);
 
         start_text();
-        FT_Set_Pixel_Sizes(face, 0, 24);
+        FT_Set_Pixel_Sizes(face, 0, 18);
+        std::cout << text_width(twittData->status, sx, sy) << std::endl;
         render_text(twittData->status,
-                -1 + 8 * sx,  1 - 520 * sy,   sx, sy);
+                -1 + 8 * sx,  1 - 520 * sy,   sx, sy, 40, 30);
     }
 
 }
@@ -243,14 +243,100 @@ void start_text() {
     glVertexAttribPointer(textProgram->getCoordAttributeLocation(), 4, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
-void render_text(std::string s, float x, float y, float sx, float sy) {
+float text_width(std::string s, float sx, float sy) {
     const char *p = s.data();
     int len = s.size();
+    float result = 0;
 
     FT_GlyphSlot g = face->glyph;
 
     for(int i = 0; i < len; i++) {
         int cp = utf8::next(p, p + (len - i));
+
+        if(FT_Load_Char(face, cp, FT_LOAD_RENDER))
+            continue;
+
+        glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_ALPHA,
+                g->bitmap.width,
+                g->bitmap.rows,
+                0,
+                GL_ALPHA,
+                GL_UNSIGNED_BYTE,
+                g->bitmap.buffer
+                );
+
+        float w = g->bitmap.width * sx;
+
+        result += w;
+    }
+
+    return result;
+}
+
+void render_text(std::string s, float x, float y, float sx, float sy, int max_chars, int step) {
+    int count_chars = 0;
+
+    float startx = x;
+    float starty = y;
+
+    FT_GlyphSlot g = face->glyph;
+
+    string token;
+    while(token != s){
+        token = s.substr(0,s.find_first_of(" "));
+        s = s.substr(s.find_first_of(" ") + 1);
+        const char *p = token.data();
+        int len = utf8::distance(p, p + token.size());
+        cout << token << " " << len << " " << count_chars << " " << max_chars << endl;
+
+        count_chars += len + 1;
+
+        if(max_chars > 0 && count_chars > max_chars) {
+            count_chars = len;
+            x = startx;
+            y -= step * sy;
+        }
+
+        for(int i = 0; i < len; i++) {
+            int cp = utf8::next(p, p + (len - i));
+
+            if(FT_Load_Char(face, cp, FT_LOAD_RENDER))
+                continue;
+
+            glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    GL_ALPHA,
+                    g->bitmap.width,
+                    g->bitmap.rows,
+                    0,
+                    GL_ALPHA,
+                    GL_UNSIGNED_BYTE,
+                    g->bitmap.buffer
+                    );
+
+            float x2 = x + g->bitmap_left * sx;
+            float y2 = -y - g->bitmap_top * sy;
+            float w = g->bitmap.width * sx;
+            float h = g->bitmap.rows * sy;
+
+            GLfloat box[4][4] = {
+                {x2,     -y2    , 0, 0},
+                {x2 + w, -y2    , 1, 0},
+                {x2,     -y2 - h, 0, 1},
+                {x2 + w, -y2 - h, 1, 1},
+            };
+
+            glBufferData(GL_ARRAY_BUFFER, sizeof box, box, GL_DYNAMIC_DRAW);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+            x += (g->advance.x >> 6) * sx;
+            y += (g->advance.y >> 6) * sy;
+        }
+        int cp = ' ';
 
         if(FT_Load_Char(face, cp, FT_LOAD_RENDER))
             continue;
@@ -285,6 +371,7 @@ void render_text(std::string s, float x, float y, float sx, float sy) {
         x += (g->advance.x >> 6) * sx;
         y += (g->advance.y >> 6) * sy;
     }
+
 }
 
 void resize(int w, int h) {
