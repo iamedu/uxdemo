@@ -21,7 +21,16 @@ struct HttpFile {
 pthread_t download_thread;
 pthread_mutex_t downloadMutex; 
 
-int file_exists(std::string filename);
+int fexists(std::string filename) {
+    std::stringstream home;
+    home << getenv("HOME") << "/.uxdemo/" << filename;
+
+    std::ifstream infile(home.str().data());
+
+    cout << "Preguntando por " << home.str() << " " << infile.good() << endl;
+
+    return infile.good();
+}
 
 static size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
 {
@@ -32,7 +41,11 @@ static size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
         if(!out->stream)
             return -1; /* failure, can't open file to write */ 
     }        
-    return fwrite(buffer, size, nmemb, out->stream);
+    if(out->stream && buffer) {
+        return fwrite(buffer, size, nmemb, out->stream);
+    } else {
+        return -1;
+    }
 }
 
 void download_file(std::string url, std::string filename) {
@@ -50,7 +63,7 @@ void download_file(std::string url, std::string filename) {
     ss << getenv("HOME") << "/.uxdemo/" << filename;
 
     struct HttpFile httpFile={
-        ss.str(), /* name to store the file as if succesful */ 
+        ss.str(),
         NULL
     };
 
@@ -61,17 +74,13 @@ void download_file(std::string url, std::string filename) {
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
 
         res = curl_easy_perform(curl);
-
         curl_easy_cleanup(curl);
-
         if(CURLE_OK != res) {
             std::cout << "curl told us " << res << std::endl;
         }
-
         if(httpFile.stream) {
-            fclose(httpFile.stream); /* close the local file */ 
+            fclose(httpFile.stream);
         }
-
     }
 }
 
@@ -159,21 +168,20 @@ void download_process() {
             home << getenv("HOME") << "/.uxdemo/twitter/" << twitter_id;
             mkdir(home.str().data(), 0777);
 
-            if(slug.size() > 0) {
-                stringstream picture;
-                picture << "http://uxtweet.herokuapp.com/api/v1/twitter/picture/";
-                picture << slug;
-                home.str("");
-                home << "twitter/" << twitter_id << "/slug";
-                if(!file_exists(picture.str().data())) {
-                    download_file(picture.str().data(), home.str().data());
-                }
+            stringstream picture;
+            picture << "http://uxtweet.herokuapp.com/api/v1/twitter/picture/";
+            picture << slug;
+
+            home.str("");
+            home << "twitter/" << twitter_id << "/slug";
+            if(!fexists(home.str().data())) {
+                download_file(picture.str().data(), home.str().data());
             }
 
             if(picture_url.size() > 0) {
                 home.str("");
                 home << "twitter/" << twitter_id << "/picture_url";
-                if(!file_exists(picture_url)) {
+                if(!fexists(home.str().data())) {
                     download_file(picture_url, home.str().data());
                 }
             }
@@ -237,7 +245,7 @@ void download_process() {
                 if(profile_url.size() > 0) {
                     home.str("");
                     home << "instagram/" << part << "/profile_url";
-                    if(!file_exists(profile_url)) {
+                    if(!fexists(home.str().data())) {
                         download_file(profile_url, home.str().data());
                     }
                 }
@@ -245,7 +253,7 @@ void download_process() {
                 if(standard_resolution.size() > 0) {
                     home.str("");
                     home << "instagram/" << part << "/standard_resolution";
-                    if(!file_exists(home.str().data())) {
+                    if(!fexists(home.str().data())) {
                         download_file(standard_resolution, home.str().data());
                     }
                 }
@@ -254,7 +262,7 @@ void download_process() {
         }
     }
 
-    curl_global_cleanup();
+    //curl_global_cleanup();
 
 }
 

@@ -12,6 +12,8 @@
 #include <ux/download.h>
 #include <ux/data.h>
 
+#include <algorithm>
+
 #include <fstream>
 
 #include <ft2build.h>
@@ -461,6 +463,8 @@ void render_text(std::string s, float x, float y, float sx, float sy, int max_ch
 
     FT_GlyphSlot g = face->glyph;
 
+    std::replace( s.begin(), s.end(), '\n', ' ');
+
     string token;
     while(token != s){
         int found = s.find_first_of(" ");
@@ -638,7 +642,7 @@ int main(int argc, char *argv[]) {
     resize(mode->width, mode->height);
 
     lastTime = glfwGetTime();
-    //init_download();
+    init_download();
 
     stage =0;
     counter = 0.0f;
@@ -663,7 +667,7 @@ int main(int argc, char *argv[]) {
         currentTime = glfwGetTime();
 
         if((currentTime - lastTime) > TIMEOUT) {
-            //download();
+            download();
             lastTime = currentTime;
         }
 
