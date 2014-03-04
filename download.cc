@@ -56,14 +56,16 @@ void download_file(std::string url, std::string filename) {
     curl = curl_easy_init();
 
     std::stringstream ss;
-
-
     std::cout << "Descargando " << url << " " << filename << std::endl;
 
     ss << getenv("HOME") << "/.uxdemo/" << filename;
 
+    char *data = (char *)malloc(ss.str().size());
+
+    strcpy(data, ss.str().data());
+
     struct HttpFile httpFile={
-        ss.str(),
+        data,
         NULL
     };
 
