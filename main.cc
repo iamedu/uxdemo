@@ -145,8 +145,11 @@ void load_tweet() {
         load_data(&tweets, &instagrams);
         return;
     }
+    
+    if(currentTweet >= tweets.size()) {
+    }
 
-    Twitt *t = tweets[currentTweet];
+    Twitt *t = tweets[currentTweet++];
 
     int textureWidth;
     int textureHeight;
@@ -224,11 +227,11 @@ void draw() {
 
 
     textureProgram->useProgram();
-    textureProgram->setUniforms(transformed, backgroundTexture, alpha);
+    textureProgram->setUniforms(transformed, backgroundTexture, 1.0f);
     textureQuad->bindData(textureProgram);
     textureQuad->draw();
 
-    load_instagram();
+    // load_instag\ram();
     if(instagramData != NULL) {
         float down = 0.0f;
         down = 0.15f;
@@ -263,7 +266,9 @@ void draw() {
         scale = glm::scale( glm::mat4 (1.0f), glm::vec3(1.5f, 0.5f, 0.3f));
         translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -0.52f - down * 2.0, 0.0f));
         transformed = projection * scale * translate;
-        textureProgram->setUniforms(transformed, whiteBoxTexture, 0.2);
+        float transparentAlpha = 0.2;
+        if(alpha < transparentAlpha) transparentAlpha = alpha;
+        textureProgram->setUniforms(transformed, whiteBoxTexture, transparentAlpha);
         textureQuad->bindData(textureProgram);
         textureQuad->draw();
 
@@ -288,7 +293,9 @@ void draw() {
         render_text(ss.str(),
                 -1 + 8 * sx,  1 - 520 * sy,   sx, sy, 0, 0);
 
-    } else if(twittData == NULL) {
+    }
+    
+    if(twittData == NULL) {
         load_tweet();
     } else {
         float down = 0.0f;
@@ -318,7 +325,9 @@ void draw() {
         scale = glm::scale( glm::mat4 (1.0f), glm::vec3(1.5f, 0.5f, 0.3f));
         translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.3, -0.52f - down * 2.0, 0.0f));
         transformed = projection * scale * translate;
-        textureProgram->setUniforms(transformed, whiteBoxTexture, 0.2);
+        float transparentAlpha = 0.2f;
+        if(alpha < transparentAlpha) transparentAlpha = alpha;
+        textureProgram->setUniforms(transformed, whiteBoxTexture, transparentAlpha);
         textureQuad->bindData(textureProgram);
         textureQuad->draw();
 
@@ -332,7 +341,7 @@ void draw() {
             translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.8, 2.4f, 0.0f));
         }
         transformed = projection * scale * translate;
-        textureProgram->setUniforms(transformed, twitterTexture, 1.0);
+        textureProgram->setUniforms(transformed, twitterTexture, alpha);
         textureQuad->bindData(textureProgram);
         textureQuad->draw();
 
@@ -398,7 +407,7 @@ float text_width(std::string s, float sx, float sy) {
         try {
             cp = utf8::next(p, p + (len - i));
         } catch(const utf8::exception& utfcpp_ex) { 
-            std::cerr << utfcpp_ex.what();
+            std::cerr << utfcpp_ex.what() << endl;
             cp = ' ';
         }
 
@@ -551,7 +560,35 @@ void resize(int w, int h) {
     projection = glm::ortho( -aspectRatio, aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f );
 }
 
+static int stage;
+static float counter;
+static float startTime;
+
 void animate() {
+    // cout << counte\r << endl;
+    counter = counter + 0.01f;
+    static double nowTime = counter;
+    if(stage == 0) {
+        if(counter >= 3) {
+            stage = 1;
+            startTime = counter;
+        }
+    } else if(stage == 1) {
+        alpha -= 0.01f;
+        if(alpha <= 0) {
+            alpha = 0.0f;
+            stage = 2;
+            load_tweet();
+        }
+    } else if(stage == 2) {
+        alpha += 0.01f;
+        if(alpha >= 1.0f) {
+            alpha = 1.0f;
+            stage = 0;
+            counter = 0.0f;
+            startTime = counter;
+        }
+    }
 }
 
 
@@ -582,6 +619,10 @@ int main(int argc, char *argv[]) {
     lastTime = glfwGetTime();
     init_download();
 
+    stage =0;
+    counter = 0.0f;
+    startTime = 0.0f;
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -592,7 +633,7 @@ int main(int argc, char *argv[]) {
         currentTime = glfwGetTime();
 
         if((currentTime - lastTime) > TIMEOUT) {
-            download();
+            //download();
             lastTime = currentTime;
         }
 
