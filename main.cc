@@ -27,6 +27,7 @@ static TextureQuad *textureQuad;
 static int textureCache[100];
 static int whiteTexture;
 static int blackTexture;
+static int backgroundTexture = -1;
 static int textureWidth;
 static int textureHeight;
 static int frame = 1;
@@ -113,6 +114,7 @@ void init() {
     glfwSetTime(0);
 }
 
+/*
 void draw() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
@@ -159,6 +161,45 @@ void draw() {
     FT_Set_Pixel_Sizes(face, 0, 48);
     render_text("#LUNARIO10 ",
             -1 + 240 * sx,   1 - 580 * sy,   sx, sy);
+
+}
+*/
+
+
+std::string translateFile(std::string filename) {
+    std::stringstream home;
+
+    home << getenv("HOME") << "/.uxdemo/" << filename;
+
+    return home.str();
+}
+
+int file_exists(std::string filename) {
+    std::ifstream infile(translateFile(filename).data());
+    return infile.good();
+}
+
+void draw() {
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    glClearColor(alpha, alpha, alpha, 1.0f);
+
+    int textureWidth, textureHeight;
+    if(file_exists("background") && backgroundTexture == -1) {
+        backgroundTexture = loadTexture(translateFile("background"), &textureWidth, &textureHeight);
+    }
+
+    float w = (float)mode->width / (float)mode->height;
+
+    glm::mat4 scaleBackground = glm::scale( glm::mat4 (1.0f), glm::vec3(2.0f * w, 2.0f, 1.0f));
+    glm::mat4 scale = glm::scale( glm::mat4 (1.0f), glm::vec3(backgroundScale));
+    glm::mat4 translate;
+    glm::mat4 transformed = projection * scaleBackground;
+
+
+    textureProgram->useProgram();
+    textureProgram->setUniforms(transformed, backgroundTexture, alpha);
+    textureQuad->bindData(textureProgram);
+    textureQuad->draw();
 
 }
 
@@ -219,11 +260,11 @@ void resize(int w, int h) {
 }
 
 void animate() {
-    backgroundScale += 0.0008f;
-
-    if(translation < -0.5f) {
-        translation += 0.1f;
-    }
+//     backg\roundScale += 0.0008f;
+//
+//     if(t\ranslation < -0.5f) {
+//         t\ranslation += 0.1f;
+//     }
 
     // if(direction == -1) {
     //     if(alpha > 0.0f) {
@@ -258,7 +299,7 @@ int main(int argc, char *argv[]) {
         return -1;
 
     mode = glfwGetVideoMode( glfwGetPrimaryMonitor() );
-    window = glfwCreateWindow(mode->width, mode->height, "UX Demo", /*glfwGetPrimaryMonitor()*/NULL, NULL);
+    window = glfwCreateWindow(mode->width, mode->height, "UX Demo", glfwGetPrimaryMonitor(), NULL);
     if (!window)
     {
         glfwTerminate();
@@ -271,15 +312,11 @@ int main(int argc, char *argv[]) {
     char temp[1024];
     double currentTime;
 
-    std::ofstream ofs ("/tmp/test.txt", std::ofstream::out);
-    ofs << getcwd(temp, 1024) << std::endl;
-    ofs.close();
-
     init();
     resize(mode->width, mode->height);
 
     lastTime = glfwGetTime();
-    init_download();
+    // init_download();
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -291,7 +328,7 @@ int main(int argc, char *argv[]) {
         currentTime = glfwGetTime();
 
         if((currentTime - lastTime) > TIMEOUT) {
-            download();
+            // download();
             lastTime = currentTime;
         }
 

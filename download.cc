@@ -104,7 +104,7 @@ void download_process() {
 //
 //     json_value *invalid_instag\rams = \read_json("list-not-app\roved-instag\rams.json");
 
-    download_file("http://uxtweet.herokuapp.com/general/background", "background.png");
+    download_file("http://uxtweet.herokuapp.com/general/background", "background");
     download_file("http://uxtweet.herokuapp.com/api/v1/twitter/list-approved-tweets", "list-approved-tweets.json");
     download_file("http://uxtweet.herokuapp.com/api/v1/twitter/list-not-approved-ids", "list-not-approved-tweets.json");
     download_file("http://uxtweet.herokuapp.com/api/v1/instagram/list-approved-instagrams", "list-approved-instagrams.json");
@@ -193,24 +193,26 @@ void download_process() {
             Instagram *instagram = new Instagram(video, link, name, profile_url, standard_resolution, tags);
             instagrams.push_back(instagram);
 
-            home.str("");
-            home << getenv("HOME") << "/.uxdemo/instagram/" << link.substr(23);
-            mkdir(home.str().data(), 0777);
-
-            if(profile_url.size() > 0) {
+            if(link.size() > 24) {
                 home.str("");
-                home << "twitter/" << link.substr(23) << "/profile_url";
-                download_file(profile_url, home.str().data());
-            }
+                home << getenv("HOME") << "/.uxdemo/instagram/" << link.substr(23);
+                mkdir(home.str().data(), 0777);
 
-            home.str("");
-            home << getenv("HOME") << "/.uxdemo/instagram/" << link.substr(23);
-            mkdir(home.str().data(), 0777);
+                if(profile_url.size() > 0) {
+                    home.str("");
+                    home << "twitter/" << link.substr(23) << "/profile_url";
+                    download_file(profile_url, home.str().data());
+                }
 
-            if(standard_resolution.size() > 0) {
                 home.str("");
-                home << "instagram/" << link.substr(23) << "/standard_resolution";
-                download_file(standard_resolution, home.str().data());
+                home << getenv("HOME") << "/.uxdemo/instagram/" << link.substr(23);
+                mkdir(home.str().data(), 0777);
+
+                if(standard_resolution.size() > 0) {
+                    home.str("");
+                    home << "instagram/" << link.substr(23) << "/standard_resolution";
+                    download_file(standard_resolution, home.str().data());
+                }
             }
 
         }
