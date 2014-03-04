@@ -233,7 +233,7 @@ void draw() {
         float down = 0.0f;
         down = 0.15f;
         scale = glm::scale( glm::mat4 (1.0f), glm::vec3(0.5, 0.125, 0.0));
-        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.4, 2.2f, 0.0f));
+        translate = glm::translate( glm::mat4(1.0f), glm::vec3(w * 0.4, 3.0f, 0.0f));
         transformed = projection * scale * translate;
         textureProgram->useProgram();
         textureProgram->setUniforms(transformed, instagramTexture, alpha);
