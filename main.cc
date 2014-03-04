@@ -179,6 +179,19 @@ int file_exists(std::string filename) {
     return infile.good();
 }
 
+static int currentTweet = 0;
+static int userPicture;
+static int tweetPicture;
+
+void load_tweet() {
+    Twitt *t = tweets[currentTweet];
+
+    int textureWidth;
+    int textureHeight;
+    userPicture = loadTexture(translateFile("437783948081790976/slug"), &textureWidth, &textureHeight);
+
+}
+
 void draw() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glClearColor(alpha, alpha, alpha, 1.0f);
@@ -186,6 +199,9 @@ void draw() {
     int textureWidth, textureHeight;
     if(file_exists("background") && backgroundTexture == -1) {
         backgroundTexture = loadTexture(translateFile("background"), &textureWidth, &textureHeight);
+        if(backgroundTexture == 0) {
+            backgroundTexture = -1;
+        }
     }
 
     float w = (float)mode->width / (float)mode->height;
@@ -299,7 +315,7 @@ int main(int argc, char *argv[]) {
         return -1;
 
     mode = glfwGetVideoMode( glfwGetPrimaryMonitor() );
-    window = glfwCreateWindow(mode->width, mode->height, "UX Demo", glfwGetPrimaryMonitor(), NULL);
+    window = glfwCreateWindow(mode->width, mode->height, "UX Demo", /*glfwGetPrimaryMonitor()*/NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -316,7 +332,7 @@ int main(int argc, char *argv[]) {
     resize(mode->width, mode->height);
 
     lastTime = glfwGetTime();
-    // init_download();
+    init_download();
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -328,7 +344,7 @@ int main(int argc, char *argv[]) {
         currentTime = glfwGetTime();
 
         if((currentTime - lastTime) > TIMEOUT) {
-            // download();
+            download();
             lastTime = currentTime;
         }
 

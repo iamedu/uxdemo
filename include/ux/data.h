@@ -1,6 +1,6 @@
 #pragma once
 
-#include <list>
+#include <vector>
 #include <string>
 
 using namespace std;
@@ -32,5 +32,5 @@ class Instagram {
         }
 };
 
-static list<Twitt *> tweets;
-static list<Instagram *> instagrams;
+static vector<Twitt *> tweets;
+static vector<Instagram *> instagrams;
